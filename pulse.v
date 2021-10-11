@@ -7,6 +7,7 @@ module pulse (
     output write_enable,
     output read_enable,
     output start_operation,
+    output c_to_operator_enable,
     output addr1_to_select_enable,
     output addr2_to_select_enable,
     output start_to_select_enable,
@@ -115,6 +116,8 @@ assign read_enable =
 assign start_operation =
     (cur_pulse == 1'o7);
 
+assign c_to_operator_enable =
+    (next_pulse == 1'o3);
 assign addr1_to_select_enable = 
     (next_pulse == 1'o2);
 assign addr2_to_select_enable = 
