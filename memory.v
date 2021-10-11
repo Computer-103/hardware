@@ -207,7 +207,8 @@ assign read_data_sel =
     ({31{addr[1:0] == 2'o2}} & ram_read_data[ 94:64]) | 
     ({31{addr[1:0] == 2'o3}} & ram_read_data[126:96]);
 
-assign read_data = read_data_r;
+// assign read_data = read_data_r;
+assign read_data = read_data_sel;
 
 assign ram_write_data = {4{1'b0, write_data}};
 
