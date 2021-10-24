@@ -118,25 +118,23 @@ wire op_op_code_valid;
 wire [5:0] op_op_code_data;
 
 
-wire pu_do_start;
-
-wire pu_write_enable;
-wire pu_read_enable;
-wire pu_start_operation;
-wire pu_c_to_operator_enable;
-wire pu_addr1_to_select_enable;
-wire pu_addr2_to_select_enable;
-wire pu_start_to_select_enable;
-wire pu_mem_to_c_enable;
+wire pu_do_c_to_operator;
+wire pu_do_addr1_to_select;
+wire pu_do_addr2_to_select;
+wire pu_do_start_to_select;
+wire pu_do_mem_to_c;
 wire pu_do_start_inc;
 wire pu_do_move_c_to_a;
 wire pu_do_move_c_to_b;
 
-wire pu_mem_finish;
-wire pu_operation_finish;
+wire pu_mem_read_pulse;
+wire pu_mem_write_pulse;
+wire pu_mem_reply;
+    
+wire pu_operate_pulse;
+wire pu_operate_reply;
 
-wire pu_read_addr2;
-wire pu_write_addr2;
+wire pu_start_pulse;
 
 
 wire st_do_arr_reg_start;
@@ -273,25 +271,23 @@ pulse u_pulse(
     .clk (clk),
     .resetn (resetn),
 
-    .do_start (pu_do_start),
-
-    .write_enable (pu_write_enable),
-    .read_enable (pu_read_enable),
-    .start_operation (pu_start_operation),
-    .c_to_operator_enable (pu_c_to_operator_enable),
-    .addr1_to_select_enable (pu_addr1_to_select_enable),
-    .addr2_to_select_enable (pu_addr2_to_select_enable),
-    .start_to_select_enable (pu_start_to_select_enable),
-    .mem_to_c_enable (pu_mem_to_c_enable),
+    .do_c_to_operator (pu_do_c_to_operator),
+    .do_addr1_to_select (pu_do_addr1_to_select),
+    .do_addr2_to_select (pu_do_addr2_to_select),
+    .do_start_to_select (pu_do_start_to_select),
+    .do_mem_to_c (pu_do_mem_to_c),
     .do_start_inc (pu_do_start_inc),
     .do_move_c_to_a (pu_do_move_c_to_a),
     .do_move_c_to_b (pu_do_move_c_to_b),
 
-    .mem_finish (pu_mem_finish),
-    .operation_finish (pu_operation_finish),
+    .mem_read_pulse (pu_mem_read_pulse),
+    .mem_write_pulse (pu_mem_write_pulse),
+    .mem_reply (pu_mem_reply),
+    
+    .operate_pulse (pu_operate_pulse),
+    .operate_reply (pu_operate_reply),
 
-    .read_addr2 (pu_read_addr2),
-    .write_addr2 (pu_write_addr2)
+    .start_pulse (pu_start_pulse)
 );
 
 start_reg u_start_reg(
@@ -349,38 +345,35 @@ assign au_arr_reg_c_value = 0;
 
 assign au_io_input_data = 0;
 
-assign au_do_read_mem = pu_mem_to_c_enable;
+assign au_do_read_mem = pu_do_mem_to_c;
 assign au_mem_read_data = me_read_data[29:0];
 
 assign ac_reg_d_0 = au_reg_d_0;
 assign ac_reg_b_0 = au_reg_b_0;
 assign ac_reg_c_30 = au_reg_c_30;
 
-assign ac_start = pu_start_operation;
+assign ac_start = pu_operate_pulse;
 
 assign ac_do_arr_c = 0;
 assign ac_arr_reg_c_sign = 0;
 
-assign ac_do_read_mem = pu_mem_to_c_enable;
+assign ac_do_read_mem = pu_do_mem_to_c;
 assign ac_mem_read_sign = me_read_data[30];
 assign ac_operation = 0;
 
-assign me_write_enable = pu_write_enable;
-assign me_read_enable = pu_read_enable;
+assign me_write_enable = pu_mem_write_pulse;
+assign me_read_enable = pu_mem_read_pulse;
 
 assign me_addr = sl_reg_select_value;
 assign me_write_data = au_mem_write_data;
 
-assign op_op_code_valid = pu_c_to_operator_enable;
+assign op_op_code_valid = pu_do_c_to_operator;
 assign op_op_code_data = au_op_code_value;
 
-assign pu_do_start = btn_machine_start;
+assign pu_start_pulse = btn_machine_start;
 
-assign pu_mem_finish = me_finish;
-assign pu_operation_finish = ac_finish;
-
-assign pu_read_addr2 = op_read_addr2;
-assign pu_write_addr2 = op_write_addr2;
+assign pu_mem_reply = me_finish;
+assign pu_operate_reply = ac_finish;
 
 assign st_do_arr_reg_start = 0;
 assign st_arr_reg_start_data = 0;
@@ -393,12 +386,12 @@ assign st_mod_reg_start_data = 0;
 assign sl_do_arr_reg_select = 0;
 assign sl_arr_reg_select_data = 0;
 
-assign sl_start_to_select_enable = pu_start_to_select_enable;
+assign sl_start_to_select_enable = pu_do_start_to_select;
 assign sl_reg_start_value = st_reg_start_value;
 
-assign sl_addr1_to_select_enable = pu_addr1_to_select_enable;
+assign sl_addr1_to_select_enable = pu_do_addr1_to_select;
 assign sl_addr1_value = au_addr1_value;
 
-assign sl_addr2_to_select_enable = pu_addr2_to_select_enable;
+assign sl_addr2_to_select_enable = pu_do_addr2_to_select;
 assign sl_addr2_value = au_addr2_value;
 endmodule
