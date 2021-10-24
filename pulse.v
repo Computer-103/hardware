@@ -43,7 +43,7 @@ always @(posedge clk) begin
     end
 end
 
-always @(posedge clk) begin
+always @(*) begin
     if (cur_pulse == 3'o0) begin
         if (pulse0_finish) begin
             next_pulse = 3'o1;
