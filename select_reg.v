@@ -21,7 +21,7 @@ reg [11:0] reg_select;
 
 always @(posedge clk) begin
     if (~resetn) begin
-        reg_select <= 0;
+        reg_select <= 12'o0000;
     end else if (do_arr_reg_select) begin
         reg_select <= arr_reg_select_data;
     end else if (start_to_select_enable) begin

@@ -1,4 +1,4 @@
-module arithmetic_unit  (
+module arith_unit  (
     input  clk,
     input  resetn,
 

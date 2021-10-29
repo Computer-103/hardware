@@ -1,5 +1,5 @@
 `include "const.vh"
-module arithmetic_controller (
+module arith_ctrl (
     input  clk,
     input  resetn,
 

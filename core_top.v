@@ -115,7 +115,7 @@ wire op_write_addr2;
 wire op_arth_and;
 
 wire op_op_code_valid;
-wire [5:0] op_op_code_data;
+wire [5:0] op_op_code_value;
 
 
 wire pu_do_c_to_operator;
@@ -162,7 +162,7 @@ wire [11:0] sl_addr2_value;
 
 wire [11:0] sl_reg_select_value;
 
-arithmetic_unit u_arithmetic_unit(
+arith_unit u_arith_unit(
     .clk (clk),
     .resetn (resetn),
 
@@ -202,7 +202,7 @@ arithmetic_unit u_arithmetic_unit(
     .mem_write_data (au_mem_write_data)
 );
 
-arithmetic_controller u_arithmetic_controller(
+arith_ctrl u_arith_ctrl(
     .clk (clk),
     .resetn (resetn),
 
@@ -264,7 +264,7 @@ operator u_operator(
     .arth_and (op_arth_and),
 
     .op_code_valid (op_op_code_valid),
-    .op_code_data (op_op_code_data)
+    .op_code_value (op_op_code_value)
 );
 
 pulse u_pulse(
@@ -368,7 +368,7 @@ assign me_addr = sl_reg_select_value;
 assign me_write_data = au_mem_write_data;
 
 assign op_op_code_valid = pu_do_c_to_operator;
-assign op_op_code_data = au_op_code_value;
+assign op_op_code_value = au_op_code_value;
 
 assign pu_start_pulse = btn_machine_start;
 
