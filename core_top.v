@@ -267,7 +267,7 @@ operator u_operator(
     .op_code_value (op_op_code_value)
 );
 
-pulse u_pulse(
+pulse_unit u_pulse_unit(
     .clk (clk),
     .resetn (resetn),
 
