@@ -1,4 +1,4 @@
-module pulse (
+module pulse_unit (
     input clk,
     input resetn,
     
