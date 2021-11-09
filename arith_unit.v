@@ -22,16 +22,16 @@ module arith_unit  (
     output reg_b_0,
     output reg_c_30,
 
-    input  do_arr_c,
-    input  [29:0] arr_reg_c_value,
-    output [29:0] reg_c_value,
+    output [ 5:0] op_code_value,
+    output [11:0] addr1_value,
+    output [11:0] addr2_value,
 
     input  io_input_data,
     output [ 3:0] io_output_data,
 
-    output [ 5:0] op_code_value,
-    output [11:0] addr1_value,
-    output [11:0] addr2_value,
+    input  do_arr_c,
+    input  [29:0] arr_reg_c_value,
+    output [29:0] reg_c_value,
     
     input  do_read_mem,
     input  [29:0] mem_read_data,
