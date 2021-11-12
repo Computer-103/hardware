@@ -13,6 +13,8 @@ always #5 clk=~clk;
 
 reg t_write_enable;
 reg t_read_enable;
+reg t_writing;
+reg t_reading;
 wire t_finish;
 wire [11:0] t_addr;
 wire [30:0] t_write_data;
@@ -33,7 +35,7 @@ reg testing;
 always @(posedge clk) begin
     if (!resetn) begin
         testing <= 0;
-    end else if (!t_write_enable && !t_read_enable && !t_finish) begin
+    end else if (!t_finish) begin
         testing <= 1;
     end else if (t_finish) begin
         testing <= 0;
@@ -76,7 +78,6 @@ always @(posedge testing) begin
 end
 
 always @(negedge testing) begin
-    #1;
     if (ref_read_enable && ref_data !== t_read_data) begin
         $display("--------------------------------------------------------------");
         $display("ERROR!!! reding %04o expected %011o but got %011o", ref_addr, ref_data, t_read_data);
@@ -87,21 +88,31 @@ end
 
 always @(posedge clk) begin
     if (~resetn) begin
+        t_writing <= 0;
         t_write_enable <= 0;
-    end else if (t_finish) begin
-        t_write_enable <= 0;
-    end else if (testing && ref_write_enable) begin
+    end else if (testing && ref_write_enable && !t_writing) begin
+        t_writing <= 1;
         t_write_enable <= 1;
+    end else begin
+        if (t_finish) begin
+            t_writing <= 0;
+        end
+        t_write_enable <= 0;
     end
 end
 
 always @(posedge clk) begin
     if (~resetn) begin
+        t_reading <= 0;
         t_read_enable <= 0;
-    end else if (t_finish) begin
-        t_read_enable <= 0;
-    end else if (testing && ref_read_enable) begin
+    end else if (testing && ref_read_enable && !t_reading) begin
+        t_reading <= 1;
         t_read_enable <= 1;
+    end else begin
+        if (t_finish) begin
+            t_reading <= 0;
+        end
+        t_read_enable <= 0;
     end
 end
 
