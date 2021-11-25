@@ -19,7 +19,7 @@ reg mem_reply;
 reg operate_reply;
 reg start_pulse;
 
-pulse t_pulse(
+pulse_unit t_pulse_unit(
     .clk (clk),
     .resetn (resetn),
 
@@ -30,7 +30,13 @@ pulse t_pulse(
     .operate_pulse (operate_pulse),
     .operate_reply (operate_reply),
 
-    .start_pulse (start_pulse)
+    .start_pulse (start_pulse),
+    // .pulse_unit_ctrl (6'b000110)    // base
+    // .pulse_unit_ctrl (6'b001100)    // not read addr2
+    // .pulse_unit_ctrl (6'b000111)    // pass
+    // .pulse_unit_ctrl (6'b101000)    // branch 1
+    // .pulse_unit_ctrl (6'b111000)    // branch 2
+    .pulse_unit_ctrl (6'b100010)    // stop
 );
 
 initial begin

@@ -57,7 +57,7 @@ assign {
 } = pulse_unit_ctrl;
 
 assign ctrl_move_c_to_b_at_7 = !ctrl_move_b_to_c_at_7;
-assign ctrl_mem_read_at_5    = !ctrl_mem_read_at_5;
+assign ctrl_mem_read_at_5    = !ctrl_mem_write_at_5;
 
 // state machine of pulse
 
