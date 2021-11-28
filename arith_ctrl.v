@@ -1,3 +1,9 @@
+/**
+ * МПД
+ * местного программного датчика
+ * 局部程序发送器
+**/
+
 `include "const.vh"
 module arith_ctrl (
     input  clk,

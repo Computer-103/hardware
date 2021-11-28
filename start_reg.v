@@ -1,3 +1,9 @@
+/**
+ * ПР
+ * пускового регистра
+ * 启动寄存器
+**/
+
 module start_reg (
     input  clk,
     input  resetn,

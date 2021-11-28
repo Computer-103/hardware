@@ -1,3 +1,9 @@
+/**
+ * ЗУ
+ * запоминающее устройство
+ * 存贮器
+**/
+
 module memory (
     input clk, 
     input resetn,

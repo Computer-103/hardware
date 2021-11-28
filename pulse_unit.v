@@ -1,3 +1,9 @@
+/**
+ * РИ
+ * распределителя импульсов
+ * 脉冲分配器
+**/
+
 module pulse_unit (
     input clk,
     input resetn,

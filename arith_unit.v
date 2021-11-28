@@ -1,3 +1,9 @@
+/**
+ * АУ
+ * арифметический узел
+ * 运算器
+**/
+
 module arith_unit  (
     input  clk,
     input  resetn,

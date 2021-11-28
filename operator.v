@@ -1,3 +1,9 @@
+/**
+ * БО
+ * блока операций
+ * 操作器 or 操作部件
+**/
+
 module operator (
     input  clk,
     input  resetn,

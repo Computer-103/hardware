@@ -1,3 +1,9 @@
+/**
+ * СР
+ * селекционного регистра
+ * 选择寄存器
+**/
+
 module select_reg (
     input  clk,
     input  resetn,
