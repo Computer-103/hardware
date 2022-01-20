@@ -125,7 +125,7 @@ wire io_do_left_shift_c;
 wire io_do_left_shift_c29;
 wire io_au_answer;
 
-// TODO: sign
+// sign
 wire sign_mul_div;
 wire sign_sub;
 wire do_move_sign;
@@ -475,7 +475,7 @@ assign io_do_left_shift_c29 =
 assign io_au_answer =
     io_state[2];
 
-// TODO: sign
+// sign
 assign sign_mul_div = reg_a_sign ^ reg_b_sign;
 assign sign_sub = reg_b_sign && !carry_out_from_au;
 
@@ -520,5 +520,66 @@ always @(posedge clk) begin
         reg_c_sign <= arr_reg_c_sign_from_pnl;
     end
 end
+
+// output
+assign au_answer_to_op =
+    add_au_answer ||
+    sub_au_answer ||
+    mul_au_answer ||
+    div_au_answer ||
+    and_au_answer;
+assign do_clear_a_to_au =
+    clear_a_from_pu;
+assign do_clear_b_to_au =
+    mul_do_clear_b;
+assign do_clear_c_to_au =
+    1'b0;
+assign do_not_a_to_au =
+    sub_do_not_a ||
+    div_do_not_a;
+assign do_not_b_to_au =
+    sub_do_not_b;
+assign do_sum_to_au =
+    add_do_sum ||
+    sub_do_sum ||
+    mul_do_sum ||
+    div_do_sum;
+assign do_and_to_au =
+    and_do_and;
+assign do_set_c_30_to_au =
+    div_do_set_c_30;
+assign do_left_shift_b_to_au =
+    div_do_left_shift_b;
+assign do_left_shift_c_to_au =
+    div_do_left_shift_c ||
+    io_do_left_shift_c;
+assign do_left_shift_c29_to_au =
+    div_do_left_shift_c29 ||
+    io_do_left_shift_c29;
+assign do_right_shift_bc_to_au =
+    mul_do_right_shift_bc;
+assign do_move_c_to_a_to_au =
+    move_c_to_a_from_pu;
+assign do_move_c_to_b_to_au =
+    move_c_to_b_from_pu ||
+    div_do_move_c_to_b ||
+    and_do_move_c_to_b;
+assign do_move_b_to_c_to_au =
+    move_b_to_c_from_pu ||
+    add_do_move_b_to_c ||
+    sub_do_move_b_to_c ||
+    mul_do_move_b_to_c;
+assign do_move_sign = 
+    add_do_move_b_to_c || 
+    sub_do_move_b_to_c ||
+    mul_do_move_b_to_c ||
+    div_do_move_c_to_b ||
+    and_do_move_c_to_b;
+
+assign reg_a_sign_to_op = reg_a_sign;
+assign reg_b_sign_to_op = reg_b_sign;
+assign reg_b_sign_to_pu = reg_b_sign;
+assign mem_write_sign_to_mem = reg_c_sign;
+assign reg_c_sign_to_io = reg_c_sign;
 
 endmodule
