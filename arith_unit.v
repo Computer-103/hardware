@@ -73,9 +73,9 @@ end
 
 always @(posedge clk) begin
     if (~resetn) begin
-        val_reg_b[0:30] <= 30'b0;
+        val_reg_b[0:30] <= 31'b0;
     end else if (do_clear_b) begin
-        val_reg_b[0:30] <= 30'b0;
+        val_reg_b[0:30] <= 31'b0;
     end else if (do_not_b) begin
         val_reg_b[0:30] <= {1'b0, val_not_b[1:30]};
     end else if (do_move_c_to_b) begin
@@ -119,7 +119,7 @@ always @(posedge clk) begin
         carry_in <= 1'b0;
     end else if (do_not_a || do_not_b) begin
         carry_in <= 1'b1;
-    end else if (do_clear_b || do_move_c_to_a) begin
+    end else if (do_clear_a || do_clear_b || do_move_c_to_a || do_move_c_to_b) begin
         carry_in <= 1'b0;
     end
 end
