@@ -27,8 +27,13 @@ module arith_ctrl (
     input  mem_read_sign_from_mem,  // level, from mem
 
     input  carry_out_from_au,       // level, from au
+    input  reg_c_1_from_au,         // level, from au
     input  reg_c_30_from_au,        // level, from au
     input  reg_b_0_from_au,         // level, from au
+    input  arr_reg_c_sign_from_pnl, // level, from pnl
+
+    input  do_read_mem_from_mem,    // level, from mem
+    input  do_arr_c_from_pnl,       // level, from pnl
 
     output au_answer_to_op,         // pulse, to op
 
@@ -78,6 +83,7 @@ reg  [ 4:0] sub_state;
 reg  [ 4:0] sub_state_next;
 wire sub_do_not_a;
 wire sub_do_not_b;
+wire sub_do_sign;
 wire sub_do_sum;
 wire sub_do_move_b_to_c;
 wire sub_au_answer;
@@ -86,6 +92,7 @@ wire sub_au_answer;
 reg  [ 4:0] mul_state;
 reg  [ 4:0] mul_state_next;
 wire mul_do_clear_b;
+wire mul_do_sign;
 wire mul_do_sum;
 wire mul_do_right_shift_bc;
 wire mul_do_move_b_to_c;
@@ -95,6 +102,7 @@ wire mul_au_answer;
 reg  [ 5:0] div_state;
 reg  [ 5:0] div_state_next;
 wire div_do_not_a;
+wire div_do_sign;
 wire div_do_left_shift_b;
 wire div_do_left_shift_c;
 wire div_do_left_shift_c29;
@@ -118,6 +126,10 @@ wire io_do_left_shift_c29;
 wire io_au_answer;
 
 // TODO: sign
+wire sign_mul_div;
+wire sign_sub;
+wire do_move_sign;
+
 reg  reg_a_sign;
 reg  reg_b_sign;
 reg  reg_c_sign;
@@ -238,6 +250,8 @@ assign sub_do_not_a =
     (sub_state[2] && !carry_out_from_au);
 assign sub_do_not_b =
     (sub_state[2] && !carry_out_from_au);
+assign sub_do_sign =
+    sub_state[2];
 assign sub_do_sum = 
     (sub_state[2] && carry_out_from_au) || 
     (sub_state[3]);
@@ -292,6 +306,8 @@ always @(*) begin
 end
 
 assign mul_do_clear_b = 
+    mul_state[1];
+assign mul_do_sign =
     mul_state[1];
 assign mul_do_sum =
     reg_c_30_from_au && mul_state[2];
@@ -355,6 +371,8 @@ always @(*) begin
 end
 
 assign div_do_not_a = 
+    div_state[1];
+assign div_do_sign = 
     div_state[1];
 assign div_do_left_shift_b =
     div_state[3];
@@ -458,5 +476,49 @@ assign io_au_answer =
     io_state[2];
 
 // TODO: sign
+assign sign_mul_div = reg_a_sign ^ reg_b_sign;
+assign sign_sub = reg_b_sign && !carry_out_from_au;
+
+always @(posedge clk) begin
+    if (~resetn) begin
+        reg_a_sign <= 1'b0;
+    end else if (move_c_to_a_from_pu)  begin
+        reg_a_sign <= reg_c_sign;
+    end else if (do_clear_a_to_au) begin
+        reg_a_sign <= 1'b0;
+    end
+end
+
+always @(posedge clk) begin
+    if (~resetn) begin
+        reg_b_sign <= 1'b0;
+    end else if (move_c_to_b_from_pu)  begin
+        reg_b_sign <= reg_c_sign;
+    end else if (mul_do_sign || div_do_sign) begin
+        reg_b_sign <= sign_mul_div;
+    end else if (sub_do_sign) begin
+        reg_b_sign <= sign_sub;
+    end else if (do_clear_b_to_au) begin
+        reg_b_sign <= 1'b0;
+    end
+end
+
+always @(posedge clk) begin
+    if (~resetn) begin
+        reg_c_sign <= 1'b0;
+    end else if (move_b_to_c_from_pu) begin
+        reg_c_sign <= reg_b_sign;
+    end else if (do_move_sign) begin
+        reg_c_sign <= reg_b_sign;
+    end else if (do_clear_c_to_au) begin
+        reg_c_sign <= 1'b0;
+    end else if (do_left_shift_c_to_au) begin
+        reg_c_sign <= reg_c_1_from_au;
+    end else if (do_read_mem_from_mem) begin
+        reg_c_sign <= mem_read_sign_from_mem;
+    end else if (do_arr_c_from_pnl) begin
+        reg_c_sign <= arr_reg_c_sign_from_pnl;
+    end
+end
 
 endmodule
