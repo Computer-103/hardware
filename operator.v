@@ -8,64 +8,139 @@ module operator (
     input  clk,
     input  resetn,
 
-    input  reg_a_sign,
-    input  reg_b_sign,
+    input  do_code_to_op_from_pu,       // pulse, from pu
+    input  operate_pulse_from_pu,       // pulse, from pu
+    input  do_move_b_to_c_from_pu,      // pulse, from pu
+    input  do_move_c_to_a_from_pu,      // pulse, from pu
+    input  mem_write_reply_from_mem,    // pulse, from pu
 
-    output [ 5:0] pulse_unit_ctrl,
+    input  au_answer_from_ac,           // pulse, from ac
 
-    input  do_c_to_operator,
-    input  [ 5:0] c_to_operator_value,
+    input  reg_a_sign_from_ac,          // level, from ac
+    input  reg_b_sign_from_ac,          // level, from ac
 
-    output [ 5:0] op_code_value
+    input  [ 5:0] op_code_from_au,      // level, from au
+
+    output order_add_to_ac,             // pulse, to ac
+    output order_sub_to_ac,             // pulse, to ac
+    output order_mul_to_ac,             // pulse, to ac
+    output order_div_to_ac,             // pulse, to ac
+    output order_and_to_ac,             // pulse, to ac
+    output order_input_to_io,           // pulse, to io
+
+    output order_write_to_io,           // pulse, to io
+    output order_output_to_io,          // pulse, to io
+    output start_pulse_to_io,           // pulse, to io
+
+    output ctrl_abs_to_ac,              // level, to ac
+    output [ 5:0] ctrl_bus_to_pu,       // level bus, to pu
+
+    output [ 5:0] op_code_value_to_pnl  // level bus, to pnl
 );
 
+// operate code register
 reg  [ 5:0] op_code;
 
 wire [ 2:0] op_code_p1;
 wire [ 2:0] op_code_p2;
 
-wire ctrl_abs;
-
+// decode for pu
 wire ctrl_select_to_start_at_4;
 wire ctrl_select_to_start_at_7;
 wire ctrl_move_b_to_c_at_7;         // opp: ctrl_move_c_to_b_at_7
 wire ctrl_mem_read_at_3;
-wire ctrl_mem_rw_at_5;
-wire ctrl_mem_write_at_5;
+wire ctrl_mem_read_at_5;
+wire wait_start_at_6;
 
+// decode for finish
+wire order_write;
+wire order_output;
+wire start_pulse;
+reg  order_write_r;
+reg  order_output_r;
+reg  start_pulse_r;
+
+// operate code register
 always @ (posedge clk) begin
     if (~resetn) begin
         op_code <= 6'h0;
-    end else if (do_c_to_operator) begin
-        op_code <= c_to_operator_value;
+    end else if (do_code_to_op_from_pu) begin
+        op_code <= op_code_from_au;
     end
 end
 
-assign op_code_value = op_code;
+assign op_code_value_to_pnl = op_code;
+
 assign op_code_p1 = op_code[5:3];
 assign op_code_p2 = op_code[2:0];
 
-// control line for operator & arith
-assign ctrl_abs         = op_code_p1[2] && op_code_p1[0];
-assign ctrl_write_res   = ~op_code_p1[0];
-assign ctrl_print_out   = ~op_code_p1[0] && op_code_p1[2];
-assign ctrl_stop        = 1'b0;
+// decode for ac
+assign order_add_to_ac = 
+    operate_pulse_from_pu && (
+        (op_code_p2 == 3'o0 && reg_a_sign_from_ac == reg_b_sign_from_ac) || // (+ [+] +) || (- [+] -)
+        (op_code_p2 == 3'o1 && reg_a_sign_from_ac != reg_b_sign_from_ac)    // (+ [-] -) || (- [-] +)
+    );
+assign order_sub_to_ac =
+    operate_pulse_from_pu && (
+        (op_code_p2 == 3'o1 && reg_a_sign_from_ac == reg_b_sign_from_ac) || // (+ [-] +) || (- [-] -)
+        (op_code_p2 == 3'o0 && reg_a_sign_from_ac != reg_b_sign_from_ac)    // (+ [+] -) || (- [+] +)
+    );
+assign order_div_to_ac =
+    operate_pulse_from_pu && op_code_p2 == 3'o2;
+assign order_mul_to_ac =
+    operate_pulse_from_pu && op_code_p2 == 3'o3;
+assign order_and_to_ac =
+    operate_pulse_from_pu && op_code_p2 == 3'o6;
 
-// control line for pulse_unit unit
+assign ctrl_abs_to_ac =
+    op_code_p1[2] && op_code_p1[0];
+
+// decode for io
+assign order_input_to_io =
+    operate_pulse_from_pu && op_code_p2 == 3'o7 && ~op_code_p1[0];
+
+// decode for pu
 assign ctrl_select_to_start_at_4    = op_code_p2 == 3'o4 && op_code_p1[1];
-assign ctrl_select_to_start_at_7    = op_code_p2 == 3'o4 && op_code_p1[1] && op_code_p1[0] && ~reg_b_sign;
+assign ctrl_select_to_start_at_7    = op_code_p2 == 3'o4 && op_code_p1[1] && op_code_p1[0] && ~reg_b_sign_from_ac;
 assign ctrl_move_b_to_c_at_7        = op_code_p1[1];
-assign ctrl_mem_read_at_3           = op_code_p2 == 3'o4;
-assign ctrl_mem_rw_at_5             = ~op_code_p1[1];
-assign ctrl_mem_write_at_5          = op_code_p2 == 3'o5;
+assign ctrl_mem_read_at_3           = op_code_p2 != 3'o4;
+assign ctrl_mem_read_at_5           = ~op_code_p1[1] && op_code_p2 != 3'o5;
+assign wait_start_at_6              = ~op_code_p1[1];
 
-assign pulse_unit_ctrl = {
+assign ctrl_bus_to_pu = {
     ctrl_select_to_start_at_4,
     ctrl_select_to_start_at_7,
     ctrl_move_b_to_c_at_7,
     ctrl_mem_read_at_3,
-    ctrl_mem_rw_at_5,
-    ctrl_mem_write_at_5
+    ctrl_mem_read_at_5,
+    wait_start_at_6
 };
+
+// for finish
+assign order_write =
+    (do_move_b_to_c_from_pu && op_code_p1[0] == 1'b0 && op_code_p2 == 3'o4) ||
+    (do_move_c_to_a_from_pu && op_code_p2 == 3'o5) ||
+    (au_answer_from_ac && op_code_p1[0] == 1'b0);
+assign order_output =
+    (mem_write_reply_from_mem && op_code_p1[2] == 1'b1);
+assign start_pulse =
+    (operate_pulse_from_pu && (op_code_p2 == 3'o5 || op_code == 6'o34 || op_code == 6'o74)) ||
+    (au_answer_from_ac && op_code_p1[0] == 1'b1);
+
+always @(posedge clk) begin
+    if (~resetn) begin
+        order_write_r  <= 1'b0;
+        order_output_r <= 1'b0;
+        start_pulse_r  <= 1'b0;
+    end else begin
+        order_write_r  <= order_write;
+        order_output_r <= order_output;
+        start_pulse_r  <= start_pulse;
+    end
+end
+
+assign order_write_to_io  = order_write_r;
+assign order_output_to_io = order_output_r;
+assign start_pulse_to_io  = start_pulse_r;
 
 endmodule
