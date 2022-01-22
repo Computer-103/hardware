@@ -19,13 +19,16 @@ module pulse_unit (
     output do_move_c_to_b_to_ac,    // pulse, to airth_ctrl
     output do_move_b_to_c_to_ac,    // pulse, to airth_ctrl
 
-    output mem_read_to_mem,         // pulse, to mem
+    output do_move_c_to_a_to_op,    // pulse, to op
+    output do_move_b_to_c_to_op,    // pulse, to op
+
     output operate_pulse_to_op,     // pulse, to op
+    output mem_read_to_mem,         // pulse, to mem
 
     input  mem_reply_from_mem,      // pulse, from mem
     input  start_pulse_from_io,     // pulse, from io_unit
 
-    input  [ 5:0] pulse_unit_ctrl_from_op   // level bus, from op
+    input  [ 5:0] ctrl_bus_from_op   // level bus, from op
 );
 
 reg [ 2:0] cur_pulse;
@@ -54,7 +57,7 @@ assign {
     ctrl_mem_read_at_3,
     ctrl_mem_read_at_5,
     wait_start_at_6
-} = pulse_unit_ctrl_from_op;
+} = ctrl_bus_from_op;
 
 assign ctrl_move_c_to_b_at_7 = !ctrl_move_b_to_c_at_7;
 assign wait_start_at_4       = ctrl_mem_read_at_3;

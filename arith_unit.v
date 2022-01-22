@@ -26,6 +26,7 @@ module arith_unit  (
 
     output reg_d_0,
     output reg_b_0,
+    output reg_c_1,
     output reg_c_30,
 
     output [ 5:0] op_code_value,
@@ -133,6 +134,7 @@ assign io_output_data[3:0]  = val_reg_c[ 1: 4];
 
 assign reg_d_0  = val_sum[0];
 assign reg_b_0  = val_reg_b[0];
+assign reg_c_1  = val_reg_c[1];
 assign reg_c_30 = val_reg_c[30];
 
 endmodule
