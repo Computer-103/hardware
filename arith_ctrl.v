@@ -21,6 +21,8 @@ module arith_ctrl (
     input  order_and_from_op,       // pulse, from op
     input  order_io_from_io,        // pulse, from io
 
+    input  ctrl_abs_from_op,        // level, from op
+
     input  shift_3_bit,             // level, from io
     input  shift_4_bit,             // level, from io
 
@@ -483,7 +485,7 @@ always @(posedge clk) begin
     if (~resetn) begin
         reg_a_sign <= 1'b0;
     end else if (move_c_to_a_from_pu)  begin
-        reg_a_sign <= reg_c_sign;
+        reg_a_sign <= reg_c_sign && (!ctrl_abs_from_op);
     end else if (do_clear_a_to_au) begin
         reg_a_sign <= 1'b0;
     end
@@ -493,7 +495,7 @@ always @(posedge clk) begin
     if (~resetn) begin
         reg_b_sign <= 1'b0;
     end else if (move_c_to_b_from_pu)  begin
-        reg_b_sign <= reg_c_sign;
+        reg_b_sign <= reg_c_sign && (!ctrl_abs_from_op);
     end else if (mul_do_sign || div_do_sign) begin
         reg_b_sign <= sign_mul_div;
     end else if (sub_do_sign) begin
