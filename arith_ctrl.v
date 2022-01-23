@@ -321,6 +321,8 @@ assign mul_do_move_b_to_c =
     mul_state[4];
 assign mul_ac_answer =
     mul_state[4];
+assign counter_count_mul = 
+    mul_state[3];
 
 // div
 always @(posedge clk) begin
@@ -389,7 +391,8 @@ assign div_do_move_c_to_b =
     div_state[5];
 assign div_ac_answer = 
     div_state[5];
-
+assign counter_count_div =
+    div_state[4];
 
 // and
 always @(posedge clk) begin
@@ -478,6 +481,8 @@ assign io_do_left_shift_c29 =
     io_state[1] && shift_4_bit_from_io;
 assign io_ac_answer =
     io_state[2];
+assign counter_count_io =
+    io_state[1];
 
 // sign
 assign sign_mul_div = reg_a_sign ^ reg_b_sign;
