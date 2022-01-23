@@ -26,12 +26,12 @@ module arith_ctrl (
     input  shift_3_bit,             // level, from io
     input  shift_4_bit,             // level, from io
 
-    input  mem_read_sign_from_mem,  // level, from mem
+    input  read_sign_from_mem,      // level, from mem
 
     input  carry_out_from_au,       // level, from au
-    input  reg_c_1_from_au,         // level, from au
-    input  reg_c_30_from_au,        // level, from au
-    input  reg_b_0_from_au,         // level, from au
+    input  reg_c1_from_au,          // level, from au
+    input  reg_c30_from_au,         // level, from au
+    input  reg_b0_from_au,          // level, from au
     input  arr_reg_c_sign_from_pnl, // level, from pnl
 
     input  do_read_mem_from_mem,    // level, from mem
@@ -58,8 +58,8 @@ module arith_ctrl (
     output reg_a_sign_to_op,        // level, to op
     output reg_b_sign_to_op,        // level, to op
     output reg_b_sign_to_pu,        // level, to pu
-    output mem_write_sign_to_mem,   // level, to mem
-    output reg_c_sign_to_io         // level, to io
+    output write_sign_to_mem,       // level, to mem
+    output output_sign_to_io        // level, to io
 );
 
 // counter_r for mul, div, io
@@ -312,7 +312,7 @@ assign mul_do_clear_b =
 assign mul_do_sign =
     mul_state[1];
 assign mul_do_sum =
-    reg_c_30_from_au && mul_state[2];
+    reg_c30_from_au && mul_state[2];
 assign mul_do_right_shift_bc = 
     mul_state[3];
 assign mul_do_move_b_to_c =
@@ -381,7 +381,7 @@ assign div_do_left_shift_b =
 assign div_do_left_shift_c = div_do_left_shift_b;
 assign div_do_left_shift_c29 = div_do_left_shift_b;
 assign div_do_sum =
-    div_state[4] && (carry_out_from_au != reg_b_0_from_au);
+    div_state[4] && (carry_out_from_au != reg_b0_from_au);
 assign div_do_set_c_30 = div_do_sum;
 assign div_do_move_c_to_b = 
     div_state[5];
@@ -515,9 +515,9 @@ always @(posedge clk) begin
     end else if (do_clear_c_to_au) begin
         reg_c_sign <= 1'b0;
     end else if (do_left_shift_c_to_au) begin
-        reg_c_sign <= reg_c_1_from_au;
+        reg_c_sign <= reg_c1_from_au;
     end else if (do_read_mem_from_mem) begin
-        reg_c_sign <= mem_read_sign_from_mem;
+        reg_c_sign <= read_sign_from_mem;
     end else if (do_arr_c_from_pnl) begin
         reg_c_sign <= arr_reg_c_sign_from_pnl;
     end
@@ -581,7 +581,7 @@ assign do_move_sign =
 assign reg_a_sign_to_op = reg_a_sign;
 assign reg_b_sign_to_op = reg_b_sign;
 assign reg_b_sign_to_pu = reg_b_sign;
-assign mem_write_sign_to_mem = reg_c_sign;
-assign reg_c_sign_to_io = reg_c_sign;
+assign write_sign_to_mem = reg_c_sign;
+assign output_sign_to_io = reg_c_sign;
 
 endmodule
