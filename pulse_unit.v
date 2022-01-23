@@ -25,7 +25,7 @@ module pulse_unit (
     output operate_pulse_to_op,     // pulse, to op
     output mem_read_to_mem,         // pulse, to mem
 
-    input  mem_reply_from_mem,      // pulse, from mem
+    input  mem_read_reply_from_mem, // pulse, from mem
     input  start_pulse_from_io,     // pulse, from io_unit
 
     input  [ 5:0] ctrl_bus_from_op   // level bus, from op
@@ -113,7 +113,7 @@ assign do_code_to_op_to_op      = entering_pulse[3];
 assign do_inc_strt_to_strt      = entering_pulse[3];
 assign do_addr1_to_sel_to_sel   = entering_pulse[3];
 assign do_addr2_to_sel_to_sel   =
-    (at_pulse[4] && mem_reply_from_mem && wait_start_at_4) ||
+    (at_pulse[4] && mem_read_reply_from_mem && wait_start_at_4) ||
     (entering_pulse[4]        && !wait_start_at_4);
 assign do_strt_to_sel_to_sel    = entering_pulse[1];
 assign do_sel_to_strt_to_strt   =
@@ -125,9 +125,9 @@ assign do_move_c_to_b_to_ac     =
 assign do_move_b_to_c_to_ac     =
     (entering_pulse[7] && ctrl_move_b_to_c_at_7);
 assign do_mem_to_c_to_ac        =
-    (at_pulse[2] && mem_reply_from_mem) ||
-    (at_pulse[4] && mem_reply_from_mem && ctrl_mem_read_at_3) ||
-    (at_pulse[6] && mem_reply_from_mem && ctrl_mem_read_at_5);
+    (at_pulse[2] && mem_read_reply_from_mem) ||
+    (at_pulse[4] && mem_read_reply_from_mem && ctrl_mem_read_at_3) ||
+    (at_pulse[6] && mem_read_reply_from_mem && ctrl_mem_read_at_5);
 assign mem_read_to_mem          =
     (at_pulse[1]) ||
     (at_pulse[3] && ctrl_mem_read_at_3) ||

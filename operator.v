@@ -14,7 +14,7 @@ module operator (
     input  do_move_c_to_a_from_pu,      // pulse, from pu
     input  mem_write_reply_from_mem,    // pulse, from pu
 
-    input  au_answer_from_ac,           // pulse, from ac
+    input  ac_answer_from_ac,           // pulse, from ac
 
     input  reg_a_sign_from_ac,          // level, from ac
     input  reg_b_sign_from_ac,          // level, from ac
@@ -56,9 +56,6 @@ wire wait_start_at_6;
 wire order_write;
 wire order_output;
 wire start_pulse;
-reg  order_write_r;
-reg  order_output_r;
-reg  start_pulse_r;
 
 // operate code register
 always @ (posedge clk) begin
@@ -116,31 +113,15 @@ assign ctrl_bus_to_pu = {
     wait_start_at_6
 };
 
-// for finish
-assign order_write =
-    (do_move_b_to_c_from_pu && op_code_p1[0] == 1'b0 && op_code_p2 == 3'o4) ||
-    (do_move_c_to_a_from_pu && op_code_p2 == 3'o5) ||
-    (au_answer_from_ac && op_code_p1[0] == 1'b0);
-assign order_output =
+// for finish (delay one cycle in io)
+assign order_write_to_io =
+    (do_move_b_to_c_from_pu && op_code_p1[0] == 1'b0 && op_code_p2 == 3'o4) ||  // 04,24,44,64
+    (do_move_c_to_a_from_pu && op_code_p2 == 3'o5) ||   // X5
+    (ac_answer_from_ac && op_code_p1[0] == 1'b0);
+assign order_output_to_io =
     (mem_write_reply_from_mem && op_code_p1[2] == 1'b1);
-assign start_pulse =
+assign start_pulse_to_io =
     (operate_pulse_from_pu && (op_code_p2 == 3'o5 || op_code == 6'o34 || op_code == 6'o74)) ||
-    (au_answer_from_ac && op_code_p1[0] == 1'b1);
-
-always @(posedge clk) begin
-    if (~resetn) begin
-        order_write_r  <= 1'b0;
-        order_output_r <= 1'b0;
-        start_pulse_r  <= 1'b0;
-    end else begin
-        order_write_r  <= order_write;
-        order_output_r <= order_output;
-        start_pulse_r  <= start_pulse;
-    end
-end
-
-assign order_write_to_io  = order_write_r;
-assign order_output_to_io = order_output_r;
-assign start_pulse_to_io  = start_pulse_r;
+    (ac_answer_from_ac && op_code_p1[0] == 1'b1);
 
 endmodule

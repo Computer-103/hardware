@@ -23,8 +23,8 @@ module arith_ctrl (
 
     input  ctrl_abs_from_op,        // level, from op
 
-    input  shift_3_bit,             // level, from io
-    input  shift_4_bit,             // level, from io
+    input  shift_3_bit_from_io,     // level, from io
+    input  shift_4_bit_from_io,     // level, from io
 
     input  read_sign_from_mem,      // level, from mem
 
@@ -37,7 +37,8 @@ module arith_ctrl (
     input  do_read_mem_from_mem,    // level, from mem
     input  do_arr_c_from_pnl,       // level, from pnl
 
-    output au_answer_to_op,         // pulse, to op
+    output ac_answer_to_op,         // pulse, to op
+    output ac_answer_to_io,         // pulse, to io
 
     output do_clear_a_to_au,        // pulse, to au
     output do_clear_b_to_au,        // pulse, to au
@@ -49,6 +50,7 @@ module arith_ctrl (
     output do_set_c_30_to_au,       // pulse, to au
     output do_left_shift_b_to_au,   // pulse, to au
     output do_left_shift_c_to_au,   // pulse, to au
+    output do_left_shift_c_to_io,   // pulse, to io
     output do_left_shift_c29_to_au, // pulse, to au
     output do_right_shift_bc_to_au, // pulse, to au
     output do_move_c_to_a_to_au,    // pulse, to_au
@@ -78,7 +80,7 @@ reg  [ 2:0] add_state;
 reg  [ 2:0] add_state_next;
 wire add_do_sum;
 wire add_do_move_b_to_c;
-wire add_au_answer;
+wire add_ac_answer;
 
 // sub
 reg  [ 4:0] sub_state;
@@ -88,7 +90,7 @@ wire sub_do_not_b;
 wire sub_do_sign;
 wire sub_do_sum;
 wire sub_do_move_b_to_c;
-wire sub_au_answer;
+wire sub_ac_answer;
 
 // mul
 reg  [ 4:0] mul_state;
@@ -98,7 +100,7 @@ wire mul_do_sign;
 wire mul_do_sum;
 wire mul_do_right_shift_bc;
 wire mul_do_move_b_to_c;
-wire mul_au_answer;
+wire mul_ac_answer;
 
 // div
 reg  [ 5:0] div_state;
@@ -111,21 +113,21 @@ wire div_do_left_shift_c29;
 wire div_do_sum;
 wire div_do_set_c_30;
 wire div_do_move_c_to_b;
-wire div_au_answer;
+wire div_ac_answer;
 
 // and
 reg  [ 2:0] and_state;
 reg  [ 2:0] and_state_next;
 wire and_do_and;
 wire and_do_move_c_to_b;
-wire and_au_answer;
+wire and_ac_answer;
 
 // io
 reg  [ 2:0] io_state;
 reg  [ 2:0] io_state_next;
 wire io_do_left_shift_c;
 wire io_do_left_shift_c29;
-wire io_au_answer;
+wire io_ac_answer;
 
 // sign
 wire sign_mul_div;
@@ -153,8 +155,8 @@ assign counter_count =
 assign counter_finish_mul_div = 
     counter_r == 5'd29;
 assign counter_finish_io = 
-    (shift_3_bit && counter_r == 5'd2) ||
-    (shift_4_bit && counter_r == 5'd3);
+    (shift_3_bit_from_io && counter_r == 5'd2) ||
+    (shift_4_bit_from_io && counter_r == 5'd3);
 
 // add
 always @(posedge clk) begin
@@ -199,7 +201,7 @@ assign add_do_sum =
     add_state[1] && !carry_out_from_au;
 assign add_do_move_b_to_c =
     add_state[2];
-assign add_au_answer = 
+assign add_ac_answer = 
     add_state[2];
 
 // sub
@@ -259,7 +261,7 @@ assign sub_do_sum =
     (sub_state[3]);
 assign sub_do_move_b_to_c =
     (sub_state[4]);
-assign sub_au_answer =
+assign sub_ac_answer =
     (sub_state[4]);
 
 // mul
@@ -317,7 +319,7 @@ assign mul_do_right_shift_bc =
     mul_state[3];
 assign mul_do_move_b_to_c =
     mul_state[4];
-assign mul_au_answer =
+assign mul_ac_answer =
     mul_state[4];
 
 // div
@@ -385,7 +387,7 @@ assign div_do_sum =
 assign div_do_set_c_30 = div_do_sum;
 assign div_do_move_c_to_b = 
     div_state[5];
-assign div_au_answer = 
+assign div_ac_answer = 
     div_state[5];
 
 
@@ -428,7 +430,7 @@ assign and_do_and =
     and_state[1];
 assign and_do_move_c_to_b =
     and_state[2];
-assign and_au_answer =
+assign and_ac_answer =
     and_state[2];
 
 // io
@@ -473,8 +475,8 @@ end
 assign io_do_left_shift_c =
     io_state[1];
 assign io_do_left_shift_c29 =
-    io_state[1] && shift_4_bit;
-assign io_au_answer =
+    io_state[1] && shift_4_bit_from_io;
+assign io_ac_answer =
     io_state[2];
 
 // sign
@@ -524,12 +526,14 @@ always @(posedge clk) begin
 end
 
 // output
-assign au_answer_to_op =
-    add_au_answer ||
-    sub_au_answer ||
-    mul_au_answer ||
-    div_au_answer ||
-    and_au_answer;
+assign ac_answer_to_op =
+    add_ac_answer ||
+    sub_ac_answer ||
+    mul_ac_answer ||
+    div_ac_answer ||
+    and_ac_answer;
+assign ac_answer_to_io =
+    io_ac_answer;
 assign do_clear_a_to_au =
     clear_a_from_pu;
 assign do_clear_b_to_au =
@@ -555,6 +559,7 @@ assign do_left_shift_b_to_au =
 assign do_left_shift_c_to_au =
     div_do_left_shift_c ||
     io_do_left_shift_c;
+assign do_left_shift_c_to_io = do_left_shift_c_to_au;
 assign do_left_shift_c29_to_au =
     div_do_left_shift_c29 ||
     io_do_left_shift_c29;
