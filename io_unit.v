@@ -88,10 +88,10 @@ wire order_io_from_output;
 wire start_pulse_from_output;
 wire stop_output_from_output;
 
-
 // order_write & start_pulse
 reg  order_write_r;
 reg  start_pulse_r;
+wire start_pulse_delay;
 
 // input statement machine
 always @(posedge clk) begin
@@ -196,7 +196,7 @@ assign stop_input_from_input =
         input_is_end
     );
 
-// TODO: output statement machine
+// output statement machine
 always @(posedge clk) begin
     if (~resetn) begin
         output_active <= 1'b0;
@@ -301,13 +301,17 @@ assign shift_4_bit_to_ac =
     (output_active && output_dec_from_pnl);
 
 // pulses
+assign start_pulse_delay = 
+    start_pulse_from_op ||
+    (mem_reply_from_mem && !order_output_from_op);
+
 always @(posedge clk) begin
     if (~resetn) begin
-        order_write_r  <= 1'b0;
-        start_pulse_r  <= 1'b0;
+        order_write_r <= 1'b0;
+        start_pulse_r <= 1'b0;
     end else begin
-        order_write_r  <= order_write_from_op;
-        start_pulse_r  <= start_pulse_from_op;
+        order_write_r <= order_write_from_op;
+        start_pulse_r <= start_pulse_delay;
     end
 end
 
