@@ -134,4 +134,7 @@ assign mem_read_to_mem          =
     (at_pulse[5] && ctrl_mem_read_at_5);
 assign operate_pulse_to_op      = at_pulse[7];
 
+assign do_move_c_to_a_to_op = do_move_c_to_a_to_ac;
+assign do_move_b_to_c_to_op = do_move_b_to_c_to_ac;
+
 endmodule

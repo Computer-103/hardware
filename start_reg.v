@@ -35,5 +35,4 @@ end
 
 assign reg_start_value = reg_start;
 
-
 endmodule

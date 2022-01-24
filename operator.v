@@ -52,11 +52,6 @@ wire ctrl_mem_read_at_3;
 wire ctrl_mem_read_at_5;
 wire wait_start_at_6;
 
-// decode for finish
-wire order_write;
-wire order_output;
-wire start_pulse;
-
 // operate code register
 always @ (posedge clk) begin
     if (~resetn) begin
