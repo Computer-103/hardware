@@ -8,8 +8,6 @@ module io_unit (
     input clk,
     input resetn,
 
-    input  reg_c_sign_from_ac,          // level, from ac
-
     input  order_write_from_op,         // pulse, from op
     input  order_input_from_op,         // pulse, from op
     input  order_output_from_op,        // pulse, from op
@@ -40,18 +38,25 @@ module io_unit (
     input  [ 3:0] output_data_from_au,  // value, from au
     output [ 4:0] input_data_to_ac,     // value, to ac
 
-    input  input_rdy_from_dev,
-    output input_ack_to_dev,
+    input  input_rdy_from_dev,          // handshake
+    output input_ack_to_dev,            // handshake
     input  [ 4:0] input_data_from_dev,  // value, from dev
 
+    output output_rdy_to_dev,           // handshake
+    input  output_ack_from_dev,         // handshake
     output [ 4:0] output_data_to_dev    // value, to dev
 );
 
-`define IDLE 0
+`define IN_IDLE 0
 `define IN_ACK 1
 `define IN_DONE 2
 `define IN_NUM 3
 `define IN_WRITE 4
+
+`define OUT_IDLE 7'b0000_000
+`define OUT_RDY 0
+`define OUT_ACK 1
+`define OUT_DONE 2
 
 // input statement machine
 reg  input_active;
@@ -70,9 +75,18 @@ wire stop_input_from_input;
 
 // output statement machine
 reg  output_active;
+reg  [ 3:0] output_state_a;
+reg  [ 2:0] output_state_b;
+reg  [ 3:0] output_state_a_next;
+reg  [ 2:0] output_state_b_next;
+
+wire output_sign;
+wire output_num;
+wire output_finish;
 
 wire order_io_from_output;
 wire start_pulse_from_output;
+wire stop_output_from_output;
 
 
 // order_write & start_pulse
@@ -95,7 +109,7 @@ end
 always @(posedge clk) begin
     if (~resetn) begin
         input_state <= 0;
-        input_state[`IDLE] <= 1;
+        input_state[`IN_IDLE] <= 1;
     // ? need clear signal?
     end else begin
         input_state <= input_state_next;
@@ -105,11 +119,11 @@ end
 always @(*) begin
     input_state_next = 0;
     case (1'b1)
-        input_state[`IDLE]: begin
+        input_state[`IN_IDLE]: begin
             if (input_active && input_rdy_from_dev) begin
                 input_state_next[`IN_ACK] = 1;
             end else begin
-                input_state_next[`IDLE] = 1;
+                input_state_next[`IN_IDLE] = 1;
             end
         end
         input_state[`IN_ACK]: begin
@@ -125,36 +139,41 @@ always @(*) begin
             end else if (input_is_write) begin
                 input_state_next[`IN_WRITE] = 1;
             end else begin
-                input_state_next[`IDLE] = 1;
+                input_state_next[`IN_IDLE] = 1;
             end
         end
         input_state[`IN_NUM]: begin
             if (ac_answer_from_ac) begin
-                input_state_next[`IDLE] = 1;
+                input_state_next[`IN_IDLE] = 1;
             end else begin
                 input_state_next[`IN_NUM] = 1;
             end
         end
         input_state[`IN_WRITE]: begin
             if (mem_write_reply_from_mem) begin
-                input_state_next[`IDLE] = 1;
+                input_state_next[`IN_IDLE] = 1;
             end else begin
                 input_state_next[`IN_NUM] = 1;
             end
         end
         default: begin
-            input_state_next[`IDLE] = 1;
+            input_state_next[`IN_IDLE] = 1;
         end
     endcase
 end
 
+assign input_ack_to_dev = input_state[`IN_ACK];
+
 always @(posedge clk) begin
     if (~resetn) begin
         reg_input <= 5'b0;
-    end else if (input_state[`IDLE] && input_active && input_rdy_from_dev) begin
+    end else if (input_state[`IN_IDLE] && input_active && input_rdy_from_dev) begin
         reg_input <= input_data_from_dev;
+    end else if (do_left_shift_c_from_ac) begin
+        reg_input <= {reg_input[3:0], 1'b0};
     end
 end
+assign input_data_to_ac = reg_input;
 
 assign input_is_num = 
     (reg_input & 5'b10000) == 5'b10000;
@@ -178,6 +197,100 @@ assign stop_input_from_input =
     );
 
 // TODO: output statement machine
+always @(posedge clk) begin
+    if (~resetn) begin
+        output_active <= 1'b0;
+    end else if (stop_output_from_output || 1'b0) begin
+        // TODO: need output stop button
+        output_active <= 1'b0;
+    end else if (order_output_from_op || 1'b0) begin
+        // TODO: need output stop button
+        output_active <= 1'b1;
+    end
+end
+
+always @(posedge clk) begin
+    if (~resetn) begin
+        output_state_a <= 4'd0;
+        output_state_b <= 3'b000;
+    end else begin
+        output_state_a <= output_state_a_next;
+        output_state_b <= output_state_b_next;
+    end
+end
+
+always @(*) begin
+    if (output_state_b[`OUT_DONE]) begin
+        if (output_finish) begin
+            output_state_a_next = 4'd0;
+        end else begin
+            output_state_a_next = output_state_a + 4'd1;
+        end
+    end else begin
+        output_state_a_next = output_state_a;
+    end
+
+    output_state_b_next = 0;
+    case (1'b1)
+        output_state_b[`OUT_RDY]: begin
+            if (output_ack_from_dev) begin
+                output_state_b_next[`OUT_ACK] = 1;
+            end else begin
+                output_state_b_next[`OUT_RDY] = 1;
+            end
+        end
+        output_state_b[`OUT_ACK]: begin
+            if (~output_ack_from_dev) begin
+                output_state_b_next[`OUT_DONE] = 1;
+            end else begin
+                output_state_b_next[`OUT_ACK] = 1;
+            end
+        end
+        output_state_b[`OUT_DONE]: begin
+            if (!output_finish) begin
+                output_state_b_next[`OUT_RDY] = 1;
+            end
+        end
+        default: begin
+            if (output_active) begin
+                output_state_b_next[`OUT_RDY] = 1;
+            end
+        end
+    endcase
+end
+
+assign output_rdy_to_dev = output_state_b[`OUT_RDY];
+
+assign output_data_to_dev = 
+    ({5{output_sign}} & {4'b1111, output_sign_from_ac}) |
+    ({5{output_num && output_oct_from_pnl}} & {2'b10, output_data_from_au[3:1]}) |
+    ({5{output_num && output_dec_from_pnl}} & {1'b1, output_data_from_au[3:0]}) |
+    ({5{output_finish}} & 5'b00110);
+
+assign output_sign = 
+    output_state_a == 4'd00;
+assign output_num = 
+    output_state_a == 4'd01 ||
+    output_state_a == 4'd02 ||
+    output_state_a == 4'd03 ||
+    output_state_a == 4'd04 ||
+    output_state_a == 4'd05 ||
+    output_state_a == 4'd06 ||
+    output_state_a == 4'd07 ||
+    (output_oct_from_pnl && output_state_a == 4'd08) ||
+    (output_oct_from_pnl && output_state_a == 4'd09) ||
+    (output_oct_from_pnl && output_state_a == 4'd10);
+assign output_finish = 
+    (output_oct_from_pnl && output_state_a == 4'd11) || 
+    (output_dec_from_pnl && output_state_a == 4'd08);
+
+assign order_io_from_output = 
+    output_num && output_state_b[`OUT_DONE];
+assign start_pulse_from_output =
+    output_finish && output_state_b[`OUT_DONE] && 
+    !stop_after_output_from_pnl;
+assign stop_output_from_output =
+    output_finish && output_state_b[`OUT_DONE];
 
 // level for oct/dec
 assign shift_3_bit_to_ac =
