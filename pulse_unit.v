@@ -28,8 +28,11 @@ module pulse_unit (
 
     input  mem_read_reply_from_mem, // pulse, from mem
     input  start_pulse_from_io,     // pulse, from io_unit
+    input  clear_pu_from_pnl,       // pulse, from pnl
 
-    input  [ 5:0] ctrl_bus_from_op   // level bus, from op
+    input  [ 5:0] ctrl_bus_from_op, // level bus, from op
+    
+    output [ 2:0] pu_state_to_pnl   // level, to pnl
 );
 
 reg [ 2:0] cur_pulse;
@@ -64,9 +67,12 @@ assign ctrl_move_c_to_b_at_7 = !ctrl_move_b_to_c_at_7;
 assign wait_start_at_4       = ctrl_mem_read_at_3;
 
 // state machine of pulse
+assign pu_state_to_pnl = cur_pulse;
 
 always @(posedge clk) begin
     if (~resetn) begin
+        cur_pulse <= 3'o0;
+    end else if (clear_pu_from_pnl) begin
         cur_pulse <= 3'o0;
     end else begin
         cur_pulse <= next_pulse;

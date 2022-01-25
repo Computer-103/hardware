@@ -19,6 +19,13 @@ module io_unit (
     input  mem_write_reply_from_mem,    // pulse, from mem
     input  mem_reply_from_mem,          // pulse, from mem
 
+    input  start_pulse_from_pnl,        // pulse, from pnl
+    input  automatic_from_pnl,          // level, from pnl
+
+    input  start_input_from_pnl,        // pulse, from pnl
+    input  stop_input_from_pnl,         // pulse, from pnl
+    input  start_output_from_pnl,       // pulse, from pnl
+    input  stop_output_from_pnl,        // pulse, from pnl
     input  input_oct_from_pnl,          // level, from pnl
     input  input_dec_from_pnl,          // level, from pnl
     input  output_oct_from_pnl,         // level, from pnl
@@ -90,18 +97,17 @@ wire stop_output_from_output;
 
 // order_write & start_pulse
 reg  order_write_r;
-reg  start_pulse_r;
 wire start_pulse_delay;
+reg  start_pulse_r;
+wire start_pulse_auto;
 
 // input statement machine
 always @(posedge clk) begin
     if (~resetn) begin
         input_active <= 1'b0;
-    end else if (stop_input_from_input || 1'b0) begin
-        // TODO: need input stop button
+    end else if (stop_input_from_input || stop_input_from_pnl) begin
         input_active <= 1'b0;
-    end else if (order_input_from_op || 1'b0) begin
-        // TODO: need input start button
+    end else if (order_input_from_op || start_input_from_pnl) begin
         input_active <= 1'b1;
     end
 end
@@ -200,11 +206,9 @@ assign stop_input_from_input =
 always @(posedge clk) begin
     if (~resetn) begin
         output_active <= 1'b0;
-    end else if (stop_output_from_output || 1'b0) begin
-        // TODO: need output stop button
+    end else if (stop_output_from_output || stop_output_from_pnl) begin
         output_active <= 1'b0;
-    end else if (order_output_from_op || 1'b0) begin
-        // TODO: need output stop button
+    end else if (order_output_from_op || start_output_from_pnl) begin
         output_active <= 1'b1;
     end
 end
@@ -315,9 +319,14 @@ always @(posedge clk) begin
     end
 end
 
-assign mem_write_to_mem  = order_write_r || order_write_from_input;
+assign mem_write_to_mem  = 
+    order_write_r || order_write_from_input;
 // TODO: need add start pulse button from pnl
-assign start_pulse_to_pu = start_pulse_r || start_pulse_from_output;
+assign start_pulse_auto = 
+    start_pulse_r || start_pulse_from_output;
+assign start_pulse_to_pu = 
+    ( automatic_from_pnl && start_pulse_auto) ||
+    (!automatic_from_pnl && start_pulse_from_pnl);
 
 assign order_io_to_ac = 
     order_io_from_input || order_io_from_output;

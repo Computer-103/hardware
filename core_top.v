@@ -11,6 +11,16 @@ module core_top (
     input  [ 4:0] dev_input_data,       // level
     output [ 4:0] dev_output_data,      // level
 
+    input  pnl_start_pulse,             // pulse
+    input  pnl_clear_pu,                // pulse
+    input  pnl_automatic,               // level
+    // TODO
+
+    input  pnl_start_input,             // pulse
+    input  pnl_stop_input,              // pulse
+    input  pnl_start_output,            // pulse
+    input  pnl_stop_output,             // pulse
+
     input  pnl_input_dec,               // level
     input  pnl_output_dec,              // level
 
@@ -29,7 +39,8 @@ module core_top (
     output [ 5:0] pnl_op_code,          // level
     output [11:0] pnl_strt_value,       // level
     output [11:0] pnl_sel_value,        // level
-    output [30:0] pnl_reg_c_value       // level
+    output [30:0] pnl_reg_c_value,      // level
+    output [ 2:0] pnl_pu_state          // level
 );
 
 // arith_unit output signals
@@ -110,6 +121,7 @@ wire  do_move_c_to_a_from_pu_to_op;
 wire  do_move_b_to_c_from_pu_to_op;
 wire  operate_pulse_from_pu_to_op;
 wire  mem_read_from_pu_to_mem;
+wire  [ 2:0] pu_state_from_pu_to_pnl;
 
 // memory output signals
 wire  mem_read_reply_from_mem_to_pu;
@@ -147,6 +159,14 @@ wire  [11:0] arr_strt_data_from_pnl_to_strt;
 
 wire  do_arr_sel_from_pnl_to_sel;
 wire  [11:0] arr_sel_data_from_pnl_to_sel;
+
+wire  start_pulse_from_pnl_to_io;
+wire  clear_pu_from_pnl_to_pu;
+wire  automatic_from_pnl_to_io;
+wire  start_input_from_pnl_to_io;
+wire  stop_input_from_pnl_to_io;
+wire  start_output_from_pnl_to_io;
+wire  stop_output_from_pnl_to_io;
 
 wire  input_oct_from_pnl_to_io;
 wire  input_dec_from_pnl_to_io;
@@ -307,6 +327,7 @@ pulse_unit  u_pulse_unit (
     .resetn                   ( resetn                          ),
     .mem_read_reply_from_mem  ( mem_read_reply_from_mem_to_pu   ),
     .start_pulse_from_io      ( start_pulse_from_io_to_pu       ),
+    .clear_pu_from_pnl        ( clear_pu_from_pnl_to_pu         ),
     .ctrl_bus_from_op         ( ctrl_bus_from_op_to_pu          ),
 
     .do_code_to_op_to_op      ( do_code_to_op_from_pu_to_op     ),
@@ -323,7 +344,8 @@ pulse_unit  u_pulse_unit (
     .do_move_c_to_a_to_op     ( do_move_c_to_a_from_pu_to_op    ),
     .do_move_b_to_c_to_op     ( do_move_b_to_c_from_pu_to_op    ),
     .operate_pulse_to_op      ( operate_pulse_from_pu_to_op     ),
-    .mem_read_to_mem          ( mem_read_from_pu_to_mem         )
+    .mem_read_to_mem          ( mem_read_from_pu_to_mem         ),
+    .pu_state_to_pnl          ( pu_state_from_pu_to_pnl         )
 );
 
 memory  u_memory (
@@ -354,6 +376,12 @@ io_unit  u_io_unit (
     .ac_answer_from_ac            ( ac_answer_from_ac_to_io             ),
     .mem_write_reply_from_mem     ( mem_write_reply_from_mem_to_io      ),
     .mem_reply_from_mem           ( mem_reply_from_mem_to_io            ),
+    .start_pulse_from_pnl         ( start_pulse_from_pnl_to_io ),
+    .automatic_from_pnl           ( automatic_from_pnl_to_io ),
+    .start_input_from_pnl         ( start_input_from_pnl_to_io ),
+    .stop_input_from_pnl          ( stop_input_from_pnl_to_io ),
+    .start_output_from_pnl        ( start_output_from_pnl_to_io ),
+    .stop_output_from_pnl         ( stop_output_from_pnl_to_io ),
     .input_oct_from_pnl           ( input_oct_from_pnl_to_io            ),
     .input_dec_from_pnl           ( input_dec_from_pnl_to_io            ),
     .output_oct_from_pnl          ( output_oct_from_pnl_to_io           ),
@@ -389,6 +417,14 @@ assign input_data_from_dev_to_io = dev_input_data;
 assign dev_output_data = output_data_from_io_to_dev;
 
 // pnl
+assign start_pulse_from_pnl_to_io = pnl_start_pulse;
+assign clear_pu_from_pnl_to_pu = pnl_clear_pu;
+assign automatic_from_pnl_to_io = pnl_automatic;
+assign start_input_from_pnl_to_io = pnl_start_input;
+assign stop_input_from_pnl_to_io = pnl_stop_input;
+assign start_output_from_pnl_to_io = pnl_start_output;
+assign stop_output_from_pnl_to_io = pnl_stop_output;
+
 assign input_oct_from_pnl_to_io  = !pnl_input_dec;
 assign input_dec_from_pnl_to_io  =  pnl_input_dec;
 assign output_oct_from_pnl_to_io = !pnl_output_dec;
@@ -410,5 +446,6 @@ assign pnl_op_code = op_code_from_op_to_pnl;
 assign pnl_strt_value = strt_value_from_strt_to_pnl;
 assign pnl_sel_value = sel_value_from_sel_to_pnl;
 assign pnl_reg_c_value = {reg_c_sign_from_ac_to_pnl, reg_c_value_from_au_to_pnl};
+assign pnl_pu_state = pu_state_from_pu_to_pnl;
 
 endmodule
