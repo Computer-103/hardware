@@ -15,6 +15,7 @@ module pulse_unit (
     output do_strt_to_sel_to_sel,   // pulse, to select_reg
     output do_sel_to_strt_to_strt,  // pulse, to start_reg
     output do_mem_to_c_to_ac,       // pulse, to airth_ctrl
+    output do_clear_a_to_ac,        // pulse, to airth_ctrl
     output do_move_c_to_a_to_ac,    // pulse, to airth_ctrl
     output do_move_c_to_b_to_ac,    // pulse, to airth_ctrl
     output do_move_b_to_c_to_ac,    // pulse, to airth_ctrl
@@ -133,6 +134,7 @@ assign mem_read_to_mem          =
     (at_pulse[3] && ctrl_mem_read_at_3) ||
     (at_pulse[5] && ctrl_mem_read_at_5);
 assign operate_pulse_to_op      = at_pulse[7];
+assign do_clear_a_to_ac         = at_pulse[1];
 
 assign do_move_c_to_a_to_op = do_move_c_to_a_to_ac;
 assign do_move_b_to_c_to_op = do_move_b_to_c_to_ac;

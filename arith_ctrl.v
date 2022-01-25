@@ -4,15 +4,14 @@
  * 局部程序发送器
 **/
 
-`include "const.vh"
 module arith_ctrl (
     input  clk,
     input  resetn,
 
-    input  clear_a_from_pu,         // pulse, from pu
-    input  move_b_to_c_from_pu,     // pulse, from pu
-    input  move_c_to_b_from_pu,     // pulse, from pu
-    input  move_c_to_a_from_pu,     // pulse, from pu
+    input  do_clear_a_from_pu,      // pulse, from pu
+    input  do_move_b_to_c_from_pu,  // pulse, from pu
+    input  do_move_c_to_b_from_pu,  // pulse, from pu
+    input  do_move_c_to_a_from_pu,  // pulse, from pu
 
     input  order_add_from_op,       // pulse, from op
     input  order_sub_from_op,       // pulse, from op
@@ -34,7 +33,7 @@ module arith_ctrl (
     input  reg_b0_from_au,          // level, from au
     input  arr_reg_c_sign_from_pnl, // level, from pnl
 
-    input  do_read_mem_from_mem,    // level, from mem
+    input  do_mem_to_c_from_pu,     // level, from mem
     input  do_arr_c_from_pnl,       // level, from pnl
 
     output ac_answer_to_op,         // pulse, to op
@@ -53,13 +52,15 @@ module arith_ctrl (
     output do_left_shift_c_to_io,   // pulse, to io
     output do_left_shift_c29_to_au, // pulse, to au
     output do_right_shift_bc_to_au, // pulse, to au
-    output do_move_c_to_a_to_au,    // pulse, to_au
-    output do_move_c_to_b_to_au,    // pulse, to_au
+    output do_move_c_to_a_to_au,    // pulse, to au
+    output do_move_c_to_b_to_au,    // pulse, to au
     output do_move_b_to_c_to_au,    // pulse, to au
+    output do_mem_to_c_to_au,       // pulse, to au
 
     output reg_a_sign_to_op,        // level, to op
     output reg_b_sign_to_op,        // level, to op
-    output reg_b_sign_to_pu,        // level, to pu
+    // output reg_b_sign_to_pu,        // level, to pu
+    output reg_c_sign_to_pnl,       // level, to pnl
     output write_sign_to_mem,       // level, to mem
     output output_sign_to_io        // level, to io
 );
@@ -142,7 +143,7 @@ reg  reg_c_sign;
 always @(posedge clk) begin
     if (~resetn) begin
         counter_r <= 5'b0;
-    end else if (clear_a_from_pu) begin
+    end else if (do_clear_a_from_pu) begin
         counter_r <= 5'b0;
     end else if (counter_count) begin
         counter_r <= counter_r + 5'b1;
@@ -163,7 +164,7 @@ always @(posedge clk) begin
     if (~resetn) begin
         add_state <= 0;
         add_state[1] <= 1'b1;
-    end else if (clear_a_from_pu) begin
+    end else if (do_clear_a_from_pu) begin
         add_state <= 0;
         add_state[1] <= 1'b1;
     end else begin
@@ -209,7 +210,7 @@ always @(posedge clk) begin
     if (~resetn) begin
         sub_state <= 0;
         sub_state[1] <= 1'b1;
-    end else if (clear_a_from_pu) begin
+    end else if (do_clear_a_from_pu) begin
         sub_state <= 0;
         sub_state[1] <= 1'b1;
     end else begin
@@ -269,7 +270,7 @@ always @(posedge clk) begin
     if (~resetn) begin
         mul_state <= 0;
         mul_state[1] <= 1'b1;
-    end else if (clear_a_from_pu) begin
+    end else if (do_clear_a_from_pu) begin
         mul_state <= 0;
         mul_state[1] <= 1'b1;
     end else begin
@@ -329,7 +330,7 @@ always @(posedge clk) begin
     if (~resetn) begin
         div_state <= 0;
         div_state[1] <= 1'b1;
-    end else if (clear_a_from_pu) begin
+    end else if (do_clear_a_from_pu) begin
         div_state <= 0;
         div_state[1] <= 1'b1;
     end else begin
@@ -399,7 +400,7 @@ always @(posedge clk) begin
     if (~resetn) begin
         and_state <= 0;
         and_state[1] <= 1'b1;
-    end else if (clear_a_from_pu) begin
+    end else if (do_clear_a_from_pu) begin
         and_state <= 0;
         and_state[1] <= 1'b1;
     end else begin
@@ -441,7 +442,7 @@ always @(posedge clk) begin
     if (~resetn) begin
         io_state <= 0;
         io_state[1] <= 1'b1;
-    end else if (clear_a_from_pu) begin
+    end else if (do_clear_a_from_pu) begin
         io_state <= 0;
         io_state[1] <= 1'b1;
     end else begin
@@ -491,7 +492,7 @@ assign sign_sub = reg_b_sign && !carry_out_from_au;
 always @(posedge clk) begin
     if (~resetn) begin
         reg_a_sign <= 1'b0;
-    end else if (move_c_to_a_from_pu)  begin
+    end else if (do_move_c_to_a_from_pu)  begin
         reg_a_sign <= reg_c_sign && (!ctrl_abs_from_op);
     end else if (do_clear_a_to_au) begin
         reg_a_sign <= 1'b0;
@@ -501,7 +502,7 @@ end
 always @(posedge clk) begin
     if (~resetn) begin
         reg_b_sign <= 1'b0;
-    end else if (move_c_to_b_from_pu)  begin
+    end else if (do_move_c_to_b_from_pu)  begin
         reg_b_sign <= reg_c_sign && (!ctrl_abs_from_op);
     end else if (mul_do_sign || div_do_sign) begin
         reg_b_sign <= sign_mul_div;
@@ -515,7 +516,7 @@ end
 always @(posedge clk) begin
     if (~resetn) begin
         reg_c_sign <= 1'b0;
-    end else if (move_b_to_c_from_pu) begin
+    end else if (do_move_b_to_c_from_pu) begin
         reg_c_sign <= reg_b_sign;
     end else if (do_move_sign) begin
         reg_c_sign <= reg_b_sign;
@@ -523,7 +524,7 @@ always @(posedge clk) begin
         reg_c_sign <= 1'b0;
     end else if (do_left_shift_c_to_au) begin
         reg_c_sign <= reg_c1_from_au;
-    end else if (do_read_mem_from_mem) begin
+    end else if (do_mem_to_c_from_pu) begin
         reg_c_sign <= read_sign_from_mem;
     end else if (do_arr_c_from_pnl) begin
         reg_c_sign <= arr_reg_c_sign_from_pnl;
@@ -540,7 +541,7 @@ assign ac_answer_to_op =
 assign ac_answer_to_io =
     io_ac_answer;
 assign do_clear_a_to_au =
-    clear_a_from_pu;
+    do_clear_a_from_pu;
 assign do_clear_b_to_au =
     mul_do_clear_b;
 assign do_clear_c_to_au =
@@ -571,13 +572,13 @@ assign do_left_shift_c29_to_au =
 assign do_right_shift_bc_to_au =
     mul_do_right_shift_bc;
 assign do_move_c_to_a_to_au =
-    move_c_to_a_from_pu;
+    do_move_c_to_a_from_pu;
 assign do_move_c_to_b_to_au =
-    move_c_to_b_from_pu ||
+    do_move_c_to_b_from_pu ||
     div_do_move_c_to_b ||
     and_do_move_c_to_b;
 assign do_move_b_to_c_to_au =
-    move_b_to_c_from_pu ||
+    do_move_b_to_c_from_pu ||
     add_do_move_b_to_c ||
     sub_do_move_b_to_c ||
     mul_do_move_b_to_c;
@@ -587,10 +588,13 @@ assign do_move_sign =
     mul_do_move_b_to_c ||
     div_do_move_c_to_b ||
     and_do_move_c_to_b;
+assign do_mem_to_c_to_au =
+    do_mem_to_c_from_pu;
 
 assign reg_a_sign_to_op = reg_a_sign;
 assign reg_b_sign_to_op = reg_b_sign;
-assign reg_b_sign_to_pu = reg_b_sign;
+// assign reg_b_sign_to_pu = reg_b_sign;
+assign reg_c_sign_to_pnl = reg_c_sign;
 assign write_sign_to_mem = reg_c_sign;
 assign output_sign_to_io = reg_c_sign;
 

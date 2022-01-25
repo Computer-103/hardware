@@ -36,7 +36,7 @@ module io_unit (
 
     input  output_sign_from_ac,         // value, from ac
     input  [ 3:0] output_data_from_au,  // value, from au
-    output [ 4:0] input_data_to_ac,     // value, to ac
+    output [ 4:0] input_data_to_au,     // value, to au
 
     input  input_rdy_from_dev,          // handshake
     output input_ack_to_dev,            // handshake
@@ -173,7 +173,7 @@ always @(posedge clk) begin
         reg_input <= {reg_input[3:0], 1'b0};
     end
 end
-assign input_data_to_ac = reg_input;
+assign input_data_to_au = reg_input;
 
 assign input_is_num = 
     (reg_input & 5'b10000) == 5'b10000;

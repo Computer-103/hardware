@@ -8,14 +8,24 @@ module memory (
     input clk, 
     input resetn,
 
-    input write_enable,
-    input read_enable,
-    output finish,
+    input  mem_write_from_io,
+    input  mem_read_from_pu,
+    output mem_read_reply_to_pu,
+    output mem_write_reply_to_op,
+    output mem_write_reply_to_io,
+    output mem_reply_to_io,
 
-    input  [11:0] addr,
-    input  [30:0] write_data,
-    output [30:0] read_data
+    input  [11:0] sel_value_from_sel,
+
+    input  write_sign_from_ac,
+    input  [29:0] write_data_from_au,
+    output read_sign_to_ac,
+    output [29:0] read_data_to_au
 );
+
+wire [11:0] addr;
+wire [30:0] write_data;
+wire [30:0] read_data;
 
 wire [30:0] ram_read_word;
 wire [30:0] ram_write_word;
@@ -24,11 +34,11 @@ wire [127:0] ram_read_line;
 wire [127:0] ram_write_line;
 wire [127:0] ram_write_bit;
 
-reg  [11:0] write_addr_r;
 reg  [30:0] write_data_r;
 reg  [30:0] read_data_r;
 
-reg  finish_r;
+reg  write_finish_r;
+reg  read_finish_r;
 reg  reading;
 reg  writing;
 
@@ -184,6 +194,8 @@ S011HD1P_X32Y2D128_BW ram_7 (
     .D      (ram_7_write_line)
 );
 
+assign addr = sel_value_from_sel;
+
 // select
 assign ram_0_enable = ~(addr[11:8] == 4'o0);
 assign ram_1_enable = ~(addr[11:8] == 4'o1);
@@ -270,7 +282,7 @@ assign ram_write_word = write_data_r;
 always @(posedge clk) begin
     if (~resetn) begin
         write_data_r <= 31'b0;
-    end else if (write_enable) begin
+    end else if (mem_write_from_io) begin
         write_data_r <= write_data;
     end
 end
@@ -280,7 +292,7 @@ end
 always @(posedge clk) begin
     if (~resetn) begin
         reading <= 1'b0;
-    end else if (read_enable) begin
+    end else if (mem_read_from_pu) begin
         reading <= 1'b1;
     end else begin
         reading <= 1'b0;
@@ -290,7 +302,7 @@ end
 always @(posedge clk) begin
     if (~resetn) begin
         writing <= 1'b0;
-    end else if (write_enable) begin
+    end else if (mem_write_from_io) begin
         writing <= 1'b1;
     end else begin
         writing <= 1'b0;
@@ -299,14 +311,23 @@ end
 
 always @(posedge clk) begin
     if (~resetn) begin
-        finish_r <= 1'b0;
-    end else if (reading || writing) begin
-        finish_r <= 1'b1;
+        write_finish_r <= 1'b0;
+        read_finish_r <= 1'b0;
     end else begin
-        finish_r <= 1'b0;
+        write_finish_r <= writing;
+        read_finish_r <= reading;
     end
 end
 
-assign finish = finish_r;
+// reply signals
+assign mem_write_reply_to_io = write_finish_r;
+assign mem_write_reply_to_op = write_finish_r;
+assign mem_read_reply_to_pu = read_finish_r;
+
+assign mem_reply_to_io = write_finish_r || read_finish_r;
+
+// concatenation of sign and data
+assign write_data = {write_sign_from_ac, write_data_from_au};
+assign {read_sign_to_ac, read_data_to_au} = read_data;
 
 endmodule

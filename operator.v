@@ -35,7 +35,7 @@ module operator (
     output ctrl_abs_to_ac,              // level, to ac
     output [ 5:0] ctrl_bus_to_pu,       // level bus, to pu
 
-    output [ 5:0] op_code_value_to_pnl  // level bus, to pnl
+    output [ 5:0] op_code_to_pnl  // level bus, to pnl
 );
 
 // operate code register
@@ -61,7 +61,7 @@ always @ (posedge clk) begin
     end
 end
 
-assign op_code_value_to_pnl = op_code;
+assign op_code_to_pnl = op_code;
 
 assign op_code_p1 = op_code[5:3];
 assign op_code_p2 = op_code[2:0];

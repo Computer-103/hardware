@@ -36,11 +36,11 @@ module arith_unit  (
     input  [ 4:0] input_data_from_io,
     output [ 3:0] output_data_to_io,
 
-    input  do_arr_c,
-    input  [29:0] arr_reg_c_value,
-    output [29:0] reg_c_value,
+    input  do_arr_c_from_pnl,
+    input  [29:0] arr_reg_c_value_from_pnl,
+    output [29:0] reg_c_value_to_pnl,
     
-    input  do_read_mem,
+    input  do_mem_to_c_from_ac,
     input  [29:0] read_data_from_mem,
     output [29:0] write_data_to_mem
 );
@@ -108,10 +108,10 @@ always @(posedge clk) begin
         val_reg_c[1:30] <= val_and[1:30];
     end else if (do_set_c_30_from_ac) begin
         val_reg_c[1:30] <= {val_reg_c[1:29], 1'b1};
-    end else if (do_read_mem) begin
+    end else if (do_mem_to_c_from_ac) begin
         val_reg_c[1:30] <= read_data_from_mem[29:0];
-    end else if (do_arr_c) begin
-        val_reg_c[1:30] <= arr_reg_c_value[29:0];
+    end else if (do_arr_c_from_pnl) begin
+        val_reg_c[1:30] <= arr_reg_c_value_from_pnl[29:0];
     end
 end
 
@@ -125,16 +125,16 @@ always @(posedge clk) begin
     end
 end
 
-assign reg_c_value[29:0]    = val_reg_c[ 1:30];
-assign write_data_to_mem[29:0] = val_reg_c[ 1:30];
-assign op_code_to_op[5:0]   = val_reg_c[ 1: 6];
-assign addr1_value_to_sel[11:0]    = val_reg_c[ 7:18];
-assign addr2_value_to_sel[11:0]    = val_reg_c[19:30];
-assign output_data_to_io[3:0]  = val_reg_c[ 1: 4];
+assign reg_c_value_to_pnl[29:0] = val_reg_c[ 1:30];
+assign write_data_to_mem[29:0]  = val_reg_c[ 1:30];
+assign op_code_to_op[5:0]       = val_reg_c[ 1: 6];
+assign addr1_value_to_sel[11:0] = val_reg_c[ 7:18];
+assign addr2_value_to_sel[11:0] = val_reg_c[19:30];
+assign output_data_to_io[3:0]   = val_reg_c[ 1: 4];
 
 assign carry_out_to_ac  = val_sum[0];
-assign reg_b0_to_ac  = val_reg_b[0];
-assign reg_c1_to_ac  = val_reg_c[1];
-assign reg_c30_to_ac = val_reg_c[30];
+assign reg_b0_to_ac     = val_reg_b[0];
+assign reg_c1_to_ac     = val_reg_c[1];
+assign reg_c30_to_ac    = val_reg_c[30];
 
 endmodule
