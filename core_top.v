@@ -2,8 +2,8 @@ module core_top (
     input clk, 
     input resetn,
 
-    input  dev_input_rdy,               // handshake
-    output dev_input_ack,               // handshake
+    output dev_input_rdy,               // handshake
+    input  dev_input_val,               // handshake
 
     output dev_output_rdy,              // handshake
     input  dev_output_ack,              // handshake
@@ -139,12 +139,12 @@ wire  do_addr2_to_sel_from_io_to_sel;
 wire  mem_write_from_io_to_mem;
 wire  start_pulse_from_io_to_pu;
 wire  [ 4:0]  input_data_from_io_to_au;
-wire  input_ack_from_io_to_dev;
+wire  input_rdy_from_io_to_dev;
 wire  output_rdy_from_io_to_dev;
 wire  [ 4:0]  output_data_from_io_to_dev;
 
 // dev signals
-wire  input_rdy_from_dev_to_io;
+wire  input_val_from_dev_to_io;
 wire  output_ack_from_dev_to_io;
 wire  [4:0] input_data_from_dev_to_io;
 
@@ -390,7 +390,7 @@ io_unit  u_io_unit (
     .stop_after_output_from_pnl   ( stop_after_output_from_pnl_to_io    ),
     .output_sign_from_ac          ( output_sign_from_ac_to_io           ),
     .output_data_from_au          ( output_data_from_au_to_io           ),
-    .input_rdy_from_dev           ( input_rdy_from_dev_to_io            ),
+    .input_val_from_dev           ( input_val_from_dev_to_io            ),
     .input_data_from_dev          ( input_data_from_dev_to_io           ),
     .output_ack_from_dev          ( output_ack_from_dev_to_io           ),
 
@@ -401,14 +401,14 @@ io_unit  u_io_unit (
     .mem_write_to_mem             ( mem_write_from_io_to_mem              ),
     .start_pulse_to_pu            ( start_pulse_from_io_to_pu             ),
     .input_data_to_au             ( input_data_from_io_to_au              ),
-    .input_ack_to_dev             ( input_ack_from_io_to_dev              ),
+    .input_rdy_to_dev             ( input_rdy_from_io_to_dev              ),
     .output_rdy_to_dev            ( output_rdy_from_io_to_dev             ),
     .output_data_to_dev           ( output_data_from_io_to_dev            )
 );
 
 // dev
-assign input_rdy_from_dev_to_io = dev_input_rdy;
-assign dev_input_ack = input_ack_from_io_to_dev;
+assign dev_input_rdy = input_rdy_from_io_to_dev;
+assign input_val_from_dev_to_io = dev_input_val;
 
 assign dev_output_rdy = output_rdy_from_io_to_dev;
 assign output_ack_from_dev_to_io = dev_output_ack;

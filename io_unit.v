@@ -45,8 +45,8 @@ module io_unit (
     input  [ 3:0] output_data_from_au,  // value, from au
     output [ 4:0] input_data_to_au,     // value, to au
 
-    input  input_rdy_from_dev,          // handshake
-    output input_ack_to_dev,            // handshake
+    output input_rdy_to_dev,            // handshake
+    input  input_val_from_dev,          // handshake
     input  [ 4:0] input_data_from_dev,  // value, from dev
 
     output output_rdy_to_dev,           // handshake
@@ -55,10 +55,11 @@ module io_unit (
 );
 
 `define IN_IDLE 0
-`define IN_ACK 1
-`define IN_DONE 2
-`define IN_NUM 3
-`define IN_WRITE 4
+`define IN_RDY 1
+`define IN_VAL 2
+`define IN_DONE 3
+`define IN_NUM 4
+`define IN_WRITE 5
 
 `define OUT_IDLE 7'b0000_000
 `define OUT_RDY 0
@@ -67,8 +68,8 @@ module io_unit (
 
 // input statement machine
 reg  input_active;
-reg  [ 4:0] input_state;
-reg  [ 4:0] input_state_next;
+reg  [ 5:0] input_state;
+reg  [ 5:0] input_state_next;
 reg  [ 4:0] reg_input;
 
 wire input_is_num;
@@ -126,17 +127,24 @@ always @(*) begin
     input_state_next = 0;
     case (1'b1)
         input_state[`IN_IDLE]: begin
-            if (input_active && input_rdy_from_dev) begin
-                input_state_next[`IN_ACK] = 1;
+            if (input_active) begin
+                input_state_next[`IN_RDY] = 1;
             end else begin
                 input_state_next[`IN_IDLE] = 1;
             end
         end
-        input_state[`IN_ACK]: begin
-            if (~input_rdy_from_dev) begin
+        input_state[`IN_RDY]: begin
+            if (input_val_from_dev) begin
+                input_state_next[`IN_VAL] = 1;
+            end else begin
+                input_state_next[`IN_RDY] = 1;
+            end
+        end
+        input_state[`IN_VAL]: begin
+            if (!input_val_from_dev) begin
                 input_state_next[`IN_DONE] = 1;
             end else begin
-                input_state_next[`IN_ACK] = 1;
+                input_state_next[`IN_VAL] = 1;
             end
         end
         input_state[`IN_DONE]: begin
@@ -168,12 +176,12 @@ always @(*) begin
     endcase
 end
 
-assign input_ack_to_dev = input_state[`IN_ACK];
+assign input_rdy_to_dev = input_state[`IN_RDY];
 
 always @(posedge clk) begin
     if (~resetn) begin
         reg_input <= 5'b0;
-    end else if (input_state[`IN_IDLE] && input_active && input_rdy_from_dev) begin
+    end else if (input_state[`IN_RDY] && input_val_from_dev) begin
         reg_input <= input_data_from_dev;
     end else if (do_left_shift_c_from_ac) begin
         reg_input <= {reg_input[3:0], 1'b0};
