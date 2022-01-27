@@ -163,10 +163,10 @@ assign counter_finish_io =
 always @(posedge clk) begin
     if (~resetn) begin
         add_state <= 0;
-        add_state[1] <= 1'b1;
+        // add_state[0] <= 1'b1;
     end else if (do_clear_a_from_pu) begin
         add_state <= 0;
-        add_state[1] <= 1'b1;
+        // add_state[0] <= 1'b1;
     end else begin
         add_state <= add_state_next;
     end
@@ -209,10 +209,10 @@ assign add_ac_answer =
 always @(posedge clk) begin
     if (~resetn) begin
         sub_state <= 0;
-        sub_state[1] <= 1'b1;
+        // sub_state[0] <= 1'b1;
     end else if (do_clear_a_from_pu) begin
         sub_state <= 0;
-        sub_state[1] <= 1'b1;
+        // sub_state[0] <= 1'b1;
     end else begin
         sub_state <= sub_state_next;
     end
@@ -269,10 +269,10 @@ assign sub_ac_answer =
 always @(posedge clk) begin
     if (~resetn) begin
         mul_state <= 0;
-        mul_state[1] <= 1'b1;
+        // mul_state[0] <= 1'b1;
     end else if (do_clear_a_from_pu) begin
         mul_state <= 0;
-        mul_state[1] <= 1'b1;
+        // mul_state[0] <= 1'b1;
     end else begin
         mul_state <= mul_state_next;
     end
@@ -329,10 +329,10 @@ assign counter_count_mul =
 always @(posedge clk) begin
     if (~resetn) begin
         div_state <= 0;
-        div_state[1] <= 1'b1;
+        // div_state[0] <= 1'b1;
     end else if (do_clear_a_from_pu) begin
         div_state <= 0;
-        div_state[1] <= 1'b1;
+        // div_state[0] <= 1'b1;
     end else begin
         div_state <= div_state_next;
     end
@@ -399,10 +399,10 @@ assign counter_count_div =
 always @(posedge clk) begin
     if (~resetn) begin
         and_state <= 0;
-        and_state[1] <= 1'b1;
+        // and_state[0] <= 1'b1;
     end else if (do_clear_a_from_pu) begin
         and_state <= 0;
-        and_state[1] <= 1'b1;
+        // and_state[0] <= 1'b1;
     end else begin
         and_state <= and_state_next;
     end
@@ -441,10 +441,10 @@ assign and_ac_answer =
 always @(posedge clk) begin
     if (~resetn) begin
         io_state <= 0;
-        io_state[1] <= 1'b1;
+        // io_state[0] <= 1'b1;
     end else if (do_clear_a_from_pu) begin
         io_state <= 0;
-        io_state[1] <= 1'b1;
+        // io_state[0] <= 1'b1;
     end else begin
         io_state <= io_state_next;
     end

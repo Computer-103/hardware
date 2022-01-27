@@ -116,7 +116,7 @@ end
 always @(posedge clk) begin
     if (~resetn) begin
         input_state <= 0;
-        input_state[`IN_IDLE] <= 1;
+        // input_state[`IN_IDLE] <= 1;
     // ? need clear signal?
     end else begin
         input_state <= input_state_next;
