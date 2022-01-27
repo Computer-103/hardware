@@ -33,6 +33,9 @@ module io_unit (
     input  continuous_input_from_pnl,   // level, from pnl
     input  stop_after_output_from_pnl,  // level, from pnl
 
+    output input_active_to_pnl,             // level, to pnl
+    output output_active_to_pnl,            // level, to pnl
+
     output shift_3_bit_to_ac,           // level, to ac
     output shift_4_bit_to_ac,           // level, to ac
 
@@ -112,6 +115,7 @@ always @(posedge clk) begin
         input_active <= 1'b1;
     end
 end
+assign input_active_to_pnl = input_active;
 
 always @(posedge clk) begin
     if (~resetn) begin
@@ -220,6 +224,7 @@ always @(posedge clk) begin
         output_active <= 1'b1;
     end
 end
+assign output_active_to_pnl = output_active;
 
 always @(posedge clk) begin
     if (~resetn) begin
