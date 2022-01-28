@@ -171,7 +171,7 @@ always @(*) begin
             if (mem_write_reply_from_mem) begin
                 input_state_next[`IN_IDLE] = 1;
             end else begin
-                input_state_next[`IN_NUM] = 1;
+                input_state_next[`IN_WRITE] = 1;
             end
         end
         default: begin
