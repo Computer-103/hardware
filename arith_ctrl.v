@@ -145,6 +145,8 @@ always @(posedge clk) begin
         counter_r <= 5'b0;
     end else if (do_clear_a_from_pu) begin
         counter_r <= 5'b0;
+    end else if (counter_finish_mul_div || counter_finish_io) begin
+        counter_r <= 5'b0;
     end else if (counter_count) begin
         counter_r <= counter_r + 5'b1;
     end
