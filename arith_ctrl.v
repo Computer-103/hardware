@@ -481,7 +481,7 @@ end
 assign io_do_left_shift_c =
     io_state[1];
 assign io_do_left_shift_c29 =
-    io_state[1] && shift_4_bit_from_io;
+    io_state[1] && shift_3_bit_from_io;
 assign io_ac_answer =
     io_state[2];
 assign counter_count_io =
