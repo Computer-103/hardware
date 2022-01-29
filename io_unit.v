@@ -338,8 +338,8 @@ assign mem_write_to_mem  =
 assign start_pulse_auto = 
     start_pulse_r || start_pulse_from_output;
 assign start_pulse_to_pu = 
-    ( automatic_from_pnl && start_pulse_auto) ||
-    (!automatic_from_pnl && start_pulse_from_pnl);
+    (automatic_from_pnl && start_pulse_auto) ||
+    (start_pulse_from_pnl);
 
 assign order_io_to_ac = 
     order_io_from_input || order_io_from_output;
