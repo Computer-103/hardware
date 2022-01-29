@@ -68,6 +68,7 @@ module io_unit (
 `define OUT_RDY 0
 `define OUT_ACK 1
 `define OUT_DONE 2
+`define OUT_SHIFT 3
 
 // input statement machine
 reg  input_active;
@@ -87,9 +88,9 @@ wire stop_input_from_input;
 // output statement machine
 reg  output_active;
 reg  [ 3:0] output_state_a;
-reg  [ 2:0] output_state_b;
+reg  [ 3:0] output_state_b;
 reg  [ 3:0] output_state_a_next;
-reg  [ 2:0] output_state_b_next;
+reg  [ 3:0] output_state_b_next;
 
 wire output_sign;
 wire output_num;
@@ -229,7 +230,7 @@ assign output_active_to_pnl = output_active;
 always @(posedge clk) begin
     if (~resetn) begin
         output_state_a <= 4'd0;
-        output_state_b <= 3'b000;
+        output_state_b <= 4'b0000;
     end else begin
         output_state_a <= output_state_a_next;
         output_state_b <= output_state_b_next;
@@ -265,7 +266,18 @@ always @(*) begin
         end
         output_state_b[`OUT_DONE]: begin
             if (!output_finish) begin
+                if (output_num) begin
+                    output_state_b_next[`OUT_SHIFT] = 1;
+                end else begin
+                    output_state_b_next[`OUT_RDY] = 1;
+                end
+            end
+        end
+        output_state_b[`OUT_SHIFT]: begin
+            if (ac_answer_from_ac) begin
                 output_state_b_next[`OUT_RDY] = 1;
+            end else begin
+                output_state_b_next[`OUT_SHIFT] = 1;
             end
         end
         default: begin
