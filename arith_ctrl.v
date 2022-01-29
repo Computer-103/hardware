@@ -506,6 +506,8 @@ always @(posedge clk) begin
         reg_b_sign <= 1'b0;
     end else if (do_move_c_to_b_from_pu)  begin
         reg_b_sign <= reg_c_sign && (!ctrl_abs_from_op);
+    end else if (do_move_b_to_c_from_pu)  begin
+        reg_b_sign <= reg_b_sign && (!ctrl_abs_from_op);
     end else if (mul_do_sign || div_do_sign) begin
         reg_b_sign <= sign_mul_div;
     end else if (sub_do_sign) begin
@@ -519,7 +521,7 @@ always @(posedge clk) begin
     if (~resetn) begin
         reg_c_sign <= 1'b0;
     end else if (do_move_b_to_c_from_pu) begin
-        reg_c_sign <= reg_b_sign;
+        reg_c_sign <= reg_b_sign && (!ctrl_abs_from_op);
     end else if (do_move_sign) begin
         reg_c_sign <= reg_b_sign;
     end else if (do_clear_c_to_au) begin

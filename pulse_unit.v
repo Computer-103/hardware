@@ -124,8 +124,8 @@ assign do_addr2_to_sel_to_sel   =
     (entering_pulse[4]        && !wait_start_at_4);
 assign do_strt_to_sel_to_sel    = entering_pulse[1];
 assign do_sel_to_strt_to_strt   =
-    (entering_pulse[4] && ctrl_select_to_start_at_4) ||
-    (entering_pulse[7] && ctrl_select_to_start_at_7);
+    (at_pulse[3] && ctrl_select_to_start_at_4) ||
+    (at_pulse[7] && ctrl_select_to_start_at_7);
 assign do_move_c_to_a_to_ac     = entering_pulse[5];
 assign do_move_c_to_b_to_ac     =
     (entering_pulse[7] && ctrl_move_c_to_b_at_7);
