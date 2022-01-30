@@ -503,7 +503,7 @@ assign counter_count_io =
 
 // sign
 assign sign_mul_div = reg_a_sign ^ reg_b_sign;
-assign sign_sub = reg_b_sign && !carry_out_from_au;
+assign sign_sub = reg_b_sign ^ !carry_out_from_au;
 
 always @(posedge clk) begin
     if (~resetn) begin
