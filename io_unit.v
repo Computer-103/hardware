@@ -192,7 +192,8 @@ always @(posedge clk) begin
         reg_input <= {reg_input[3:0], 1'b0};
     end
 end
-assign input_data_to_au = reg_input;
+assign input_data_to_au = 
+    {5{input_active}} & reg_input;
 
 assign input_is_num = 
     (reg_input & 5'b10000) == 5'b10000;

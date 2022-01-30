@@ -56,7 +56,7 @@ wire [29:0] val_not_a;
 wire [29:0] val_not_b;
 wire [29:0] val_and;
 
-assign val_sum[30:0] = {1'b0, val_reg_a[29:0]} + val_reg_b[30:0] + {30'b0, carry_in};
+assign val_sum[30:0] = {1'b0, val_reg_a[29:0]} + {1'b0, val_reg_b[29:0]} + {30'b0, carry_in};
 assign val_not_a[29:0] = ~val_reg_a[29:0];
 assign val_not_b[29:0] = ~val_reg_b[29:0];
 assign val_and[29:0] = val_reg_a[29:0] & val_reg_c[29:0];
