@@ -112,7 +112,7 @@ always @(posedge clk) begin
         input_active <= 1'b0;
     end else if (stop_input_from_input || stop_input_from_pnl) begin
         input_active <= 1'b0;
-    end else if (order_input_from_op || start_input_from_pnl) begin
+    end else if ((order_input_from_op || start_input_from_pnl) && !output_active) begin
         input_active <= 1'b1;
     end
 end
@@ -222,7 +222,7 @@ always @(posedge clk) begin
         output_active <= 1'b0;
     end else if (stop_output_from_output || stop_output_from_pnl) begin
         output_active <= 1'b0;
-    end else if (order_output_from_op || start_output_from_pnl) begin
+    end else if ((order_output_from_op || start_output_from_pnl) && !input_active) begin
         output_active <= 1'b1;
     end
 end
