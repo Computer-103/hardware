@@ -444,10 +444,10 @@ assign do_arr_c_from_pnl_to_ac = pnl_do_arr_c;
 assign {arr_reg_c_sign_from_pnl_to_ac, arr_reg_c_value_from_pnl_to_au} = pnl_arr_reg_c_value;
 
 assign do_arr_strt_from_pnl_to_strt = pnl_do_arr_strt;
-assign arr_sel_data_from_pnl_to_sel = pnl_arr_strt_value;
+assign arr_strt_data_from_pnl_to_strt = pnl_arr_strt_value;
 
 assign do_arr_sel_from_pnl_to_sel = pnl_do_arr_sel;
-assign arr_strt_data_from_pnl_to_strt = pnl_arr_sel_value;
+assign arr_sel_data_from_pnl_to_sel = pnl_arr_sel_value;
 
 assign pnl_op_code = op_code_from_op_to_pnl;
 assign pnl_strt_value = strt_value_from_strt_to_pnl;
