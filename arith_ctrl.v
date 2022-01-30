@@ -68,6 +68,11 @@ module arith_ctrl (
 // counter_r for mul, div, io
 reg [ 4:0] counter_r;
 
+wire counter_clear;
+wire counter_clear_mul;
+wire counter_clear_div;
+wire counter_clear_io;
+
 wire counter_count;
 wire counter_count_mul;
 wire counter_count_div;
@@ -145,12 +150,15 @@ always @(posedge clk) begin
         counter_r <= 5'b0;
     end else if (do_clear_a_from_pu) begin
         counter_r <= 5'b0;
-    end else if (counter_finish_mul_div || counter_finish_io) begin
+    end else if (counter_clear) begin
         counter_r <= 5'b0;
     end else if (counter_count) begin
         counter_r <= counter_r + 5'b1;
     end
 end
+
+assign counter_clear =
+    counter_clear_mul || counter_clear_div || counter_clear_io;
 
 assign counter_count = 
     counter_count_mul || counter_count_div || counter_count_io;
@@ -324,6 +332,8 @@ assign mul_do_move_b_to_c =
     mul_state[4];
 assign mul_ac_answer =
     mul_state[4];
+assign counter_clear_mul =
+    mul_state[4];
 assign counter_count_mul = 
     mul_state[3];
 
@@ -393,6 +403,8 @@ assign div_do_set_c_30 = div_do_sum;
 assign div_do_move_c_to_b = 
     div_state[5];
 assign div_ac_answer = 
+    div_state[5];
+assign counter_clear_div =
     div_state[5];
 assign counter_count_div =
     div_state[4];
@@ -483,6 +495,8 @@ assign io_do_left_shift_c =
 assign io_do_left_shift_c29 =
     io_state[1] && shift_3_bit_from_io;
 assign io_ac_answer =
+    io_state[2];
+assign counter_clear_io =
     io_state[2];
 assign counter_count_io =
     io_state[1];
