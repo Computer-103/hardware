@@ -33,7 +33,8 @@ module arith_ctrl (
     input  reg_b0_from_au,          // level, from au
     input  arr_reg_c_sign_from_pnl, // level, from pnl
 
-    input  do_mem_to_c_from_pu,     // level, from mem
+    // input  do_mem_to_c_from_pu,     // level, from pu
+    input  mem_read_reply_from_mem, // pulse, from mem
     input  do_arr_c_from_pnl,       // level, from pnl
 
     output ac_answer_to_op,         // pulse, to op
@@ -542,7 +543,7 @@ always @(posedge clk) begin
         reg_c_sign <= 1'b0;
     end else if (do_left_shift_c_to_au) begin
         reg_c_sign <= reg_c1_from_au;
-    end else if (do_mem_to_c_from_pu) begin
+    end else if (mem_read_reply_from_mem) begin
         reg_c_sign <= read_sign_from_mem;
     end else if (do_arr_c_from_pnl) begin
         reg_c_sign <= arr_reg_c_sign_from_pnl;
@@ -607,7 +608,7 @@ assign do_move_sign =
     div_do_move_c_to_b ||
     and_do_move_c_to_b;
 assign do_mem_to_c_to_au =
-    do_mem_to_c_from_pu;
+    mem_read_reply_from_mem;
 
 assign reg_a_sign_to_op = reg_a_sign;
 assign reg_b_sign_to_op = reg_b_sign;

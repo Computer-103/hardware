@@ -14,7 +14,9 @@ module core_top (
     input  pnl_start_pulse,             // pulse
     input  pnl_clear_pu,                // pulse
     input  pnl_automatic,               // level
-    // TODO
+    
+    input  pnl_mem_read,                // pulse
+    input  pnl_mem_write,               // pulse
 
     input  pnl_start_input,             // pulse
     input  pnl_stop_input,              // pulse
@@ -115,7 +117,7 @@ wire  do_addr1_to_sel_from_pu_to_sel;
 wire  do_addr2_to_sel_from_pu_to_sel;
 wire  do_strt_to_sel_from_pu_to_sel;
 wire  do_sel_to_strt_from_pu_to_strt;
-wire  do_mem_to_c_from_pu_to_ac;
+// wire  do_mem_to_c_from_pu_to_ac;
 wire  do_clear_a_from_pu_to_ac;
 wire  do_move_c_to_a_from_pu_to_ac;
 wire  do_move_c_to_b_from_pu_to_ac;
@@ -128,6 +130,7 @@ wire  [ 2:0] pu_state_from_pu_to_pnl;
 
 // memory output signals
 wire  mem_read_reply_from_mem_to_pu;
+wire  mem_read_reply_from_mem_to_ac;
 wire  mem_write_reply_from_mem_to_op;
 wire  mem_write_reply_from_mem_to_io;
 wire  mem_reply_from_mem_to_io;
@@ -172,6 +175,9 @@ wire  start_input_from_pnl_to_io;
 wire  stop_input_from_pnl_to_io;
 wire  start_output_from_pnl_to_io;
 wire  stop_output_from_pnl_to_io;
+
+wire  mem_read_from_pnl_to_mem;
+wire  mem_write_from_pnl_to_mem;
 
 wire  input_oct_from_pnl_to_io;
 wire  input_dec_from_pnl_to_io;
@@ -238,7 +244,8 @@ arith_ctrl  u_arith_ctrl (
     .reg_c30_from_au          ( reg_c30_from_au_to_ac           ),
     .reg_b0_from_au           ( reg_b0_from_au_to_ac            ),
     .arr_reg_c_sign_from_pnl  ( arr_reg_c_sign_from_pnl_to_ac   ),
-    .do_mem_to_c_from_pu      ( do_mem_to_c_from_pu_to_ac       ),
+    // .do_mem_to_c_from_pu      ( do_mem_to_c_from_pu_to_ac       ),
+    .mem_read_reply_from_mem  ( mem_read_reply_from_mem_to_ac   ),
     .do_arr_c_from_pnl        ( do_arr_c_from_pnl_to_ac         ),
 
     .ac_answer_to_op          ( ac_answer_from_ac_to_op           ),
@@ -341,7 +348,7 @@ pulse_unit  u_pulse_unit (
     .do_addr2_to_sel_to_sel   ( do_addr2_to_sel_from_pu_to_sel  ),
     .do_strt_to_sel_to_sel    ( do_strt_to_sel_from_pu_to_sel   ),
     .do_sel_to_strt_to_strt   ( do_sel_to_strt_from_pu_to_strt  ),
-    .do_mem_to_c_to_ac        ( do_mem_to_c_from_pu_to_ac       ),
+    // .do_mem_to_c_to_ac        ( do_mem_to_c_from_pu_to_ac       ),
     .do_clear_a_to_ac         ( do_clear_a_from_pu_to_ac        ),
     .do_move_c_to_a_to_ac     ( do_move_c_to_a_from_pu_to_ac    ),
     .do_move_c_to_b_to_ac     ( do_move_c_to_b_from_pu_to_ac    ),
@@ -356,13 +363,16 @@ pulse_unit  u_pulse_unit (
 memory  u_memory (
     .clk                     ( clk                     ),
     .resetn                  ( resetn                  ),
-    .mem_write_from_io       ( mem_write_from_io_to_mem       ),
     .mem_read_from_pu        ( mem_read_from_pu_to_mem        ),
+    .mem_read_from_pnl       ( mem_read_from_pnl_to_mem       ),
+    .mem_write_from_io       ( mem_write_from_io_to_mem       ),
+    .mem_write_from_pnl      ( mem_write_from_pnl_to_mem      ),
     .sel_value_from_sel      ( sel_value_from_sel_to_mem      ),
     .write_sign_from_ac      ( write_sign_from_ac_to_mem      ),
     .write_data_from_au      ( write_data_from_au_to_mem      ),
 
     .mem_read_reply_to_pu    ( mem_read_reply_from_mem_to_pu    ),
+    .mem_read_reply_to_ac    ( mem_read_reply_from_mem_to_ac    ),
     .mem_write_reply_to_op   ( mem_write_reply_from_mem_to_op   ),
     .mem_write_reply_to_io   ( mem_write_reply_from_mem_to_io   ),
     .mem_reply_to_io         ( mem_reply_from_mem_to_io         ),
@@ -431,6 +441,9 @@ assign start_input_from_pnl_to_io = pnl_start_input;
 assign stop_input_from_pnl_to_io = pnl_stop_input;
 assign start_output_from_pnl_to_io = pnl_start_output;
 assign stop_output_from_pnl_to_io = pnl_stop_output;
+
+assign mem_read_from_pnl_to_mem = pnl_mem_read;
+assign mem_write_from_pnl_to_mem = pnl_mem_write;
 
 assign input_oct_from_pnl_to_io  = !pnl_input_dec;
 assign input_dec_from_pnl_to_io  =  pnl_input_dec;

@@ -14,7 +14,7 @@ module pulse_unit (
     output do_addr2_to_sel_to_sel,  // pulse, to select_reg
     output do_strt_to_sel_to_sel,   // pulse, to select_reg
     output do_sel_to_strt_to_strt,  // pulse, to start_reg
-    output do_mem_to_c_to_ac,       // pulse, to airth_ctrl
+    // output do_mem_to_c_to_ac,       // pulse, to airth_ctrl
     output do_clear_a_to_ac,        // pulse, to airth_ctrl
     output do_move_c_to_a_to_ac,    // pulse, to airth_ctrl
     output do_move_c_to_b_to_ac,    // pulse, to airth_ctrl
@@ -131,10 +131,10 @@ assign do_move_c_to_b_to_ac     =
     (entering_pulse[7] && ctrl_move_c_to_b_at_7);
 assign do_move_b_to_c_to_ac     =
     (entering_pulse[7] && ctrl_move_b_to_c_at_7);
-assign do_mem_to_c_to_ac        =
-    (at_pulse[2] && mem_read_reply_from_mem) ||
-    (at_pulse[4] && mem_read_reply_from_mem && ctrl_mem_read_at_3) ||
-    (at_pulse[6] && mem_read_reply_from_mem && ctrl_mem_read_at_5);
+// assign do_mem_to_c_to_ac        =
+//     (at_pulse[2] && mem_read_reply_from_mem) ||
+//     (at_pulse[4] && mem_read_reply_from_mem && ctrl_mem_read_at_3) ||
+//     (at_pulse[6] && mem_read_reply_from_mem && ctrl_mem_read_at_5);
 assign mem_read_to_mem          =
     (at_pulse[1]) ||
     (at_pulse[3] && ctrl_mem_read_at_3) ||

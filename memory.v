@@ -8,9 +8,12 @@ module memory (
     input clk, 
     input resetn,
 
-    input  mem_write_from_io,
     input  mem_read_from_pu,
+    input  mem_read_from_pnl,
+    input  mem_write_from_io,
+    input  mem_write_from_pnl,
     output mem_read_reply_to_pu,
+    output mem_read_reply_to_ac,
     output mem_write_reply_to_op,
     output mem_write_reply_to_io,
     output mem_reply_to_io,
@@ -22,6 +25,9 @@ module memory (
     output read_sign_to_ac,
     output [29:0] read_data_to_au
 );
+
+wire do_mem_read;
+wire do_mem_write;
 
 wire [11:0] addr;
 wire [30:0] write_data;
@@ -194,6 +200,11 @@ S011HD1P_X32Y2D128_BW ram_7 (
     .D      (ram_7_write_line)
 );
 
+assign do_mem_read = 
+    mem_read_from_pu || mem_read_from_pnl;
+assign do_mem_write =
+    mem_write_from_io || mem_write_from_pnl;
+
 assign addr = sel_value_from_sel;
 
 // select
@@ -282,7 +293,7 @@ assign ram_write_word = write_data_r;
 always @(posedge clk) begin
     if (~resetn) begin
         write_data_r <= 31'b0;
-    end else if (mem_write_from_io) begin
+    end else if (do_mem_write) begin
         write_data_r <= write_data;
     end
 end
@@ -292,7 +303,7 @@ end
 always @(posedge clk) begin
     if (~resetn) begin
         reading <= 1'b0;
-    end else if (mem_read_from_pu) begin
+    end else if (do_mem_read) begin
         reading <= 1'b1;
     end else begin
         reading <= 1'b0;
@@ -302,7 +313,7 @@ end
 always @(posedge clk) begin
     if (~resetn) begin
         writing <= 1'b0;
-    end else if (mem_write_from_io) begin
+    end else if (do_mem_write) begin
         writing <= 1'b1;
     end else begin
         writing <= 1'b0;
@@ -323,6 +334,7 @@ end
 assign mem_write_reply_to_io = write_finish_r;
 assign mem_write_reply_to_op = write_finish_r;
 assign mem_read_reply_to_pu = read_finish_r;
+assign mem_read_reply_to_ac = read_finish_r;
 
 assign mem_reply_to_io = write_finish_r || read_finish_r;
 
