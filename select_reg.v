@@ -17,6 +17,9 @@ module select_reg (
     input  do_addr1_to_sel_from_pu,
     input  [11:0] addr1_value_from_au,
 
+    input  [11:0] cmp_value_from_pnl,
+    output cmp_match_to_io,
+
     input  do_addr2_to_sel_from_pu,
     input  do_addr2_to_sel_from_io,
     input  [11:0] addr2_value_from_au,
@@ -45,5 +48,8 @@ end
 assign sel_value_to_strt = reg_select;
 assign sel_value_to_mem = reg_select;
 assign sel_value_to_pnl = reg_select;
+
+assign cmp_match_to_io = 
+    reg_select == cmp_value_from_pnl;
 
 endmodule

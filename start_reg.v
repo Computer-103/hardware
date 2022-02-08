@@ -16,6 +16,9 @@ module start_reg (
     input  do_sel_to_strt_from_pu,
     input  [11:0] sel_value_from_sel,
 
+    input  [11:0] cmp_value_from_pnl,
+    output cmp_match_to_io,
+
     output [11:0] strt_value_to_sel,
     output [11:0] strt_value_to_pnl
 );
@@ -36,5 +39,8 @@ end
 
 assign strt_value_to_sel = reg_start;
 assign strt_value_to_pnl = reg_start;
+
+assign cmp_match_to_io = 
+    reg_start == cmp_value_from_pnl;
 
 endmodule

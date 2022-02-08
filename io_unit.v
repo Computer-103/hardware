@@ -33,8 +33,13 @@ module io_unit (
     input  continuous_input_from_pnl,   // level, from pnl
     input  stop_after_output_from_pnl,  // level, from pnl
 
-    output input_active_to_pnl,             // level, to pnl
-    output output_active_to_pnl,            // level, to pnl
+    input  stop_at_cmp_from_pnl,        // level, from pnl
+    input  cmp_with_strt_from_pnl,      // level, from pnl
+    input  cmp_match_from_strt,         // level, from strt
+    input  cmp_match_from_sel,          // level, from sel
+
+    output input_active_to_pnl,         // level, to pnl
+    output output_active_to_pnl,        // level, to pnl
 
     output shift_3_bit_to_ac,           // level, to ac
     output shift_4_bit_to_ac,           // level, to ac
@@ -105,6 +110,7 @@ reg  order_write_r;
 wire start_pulse_delay;
 reg  start_pulse_r;
 wire start_pulse_auto;
+wire stop_because_cmp;
 
 // input statement machine
 always @(posedge clk) begin
@@ -347,11 +353,16 @@ end
 
 assign mem_write_to_mem  = 
     order_write_r || order_write_from_input;
-// TODO: need add start pulse button from pnl
+
 assign start_pulse_auto = 
     start_pulse_r || start_pulse_from_output;
+assign stop_because_cmp =
+    stop_at_cmp_from_pnl && (
+        ( cmp_with_strt_from_pnl && cmp_match_from_strt) ||
+        (!cmp_with_strt_from_pnl && cmp_match_from_sel)
+    );
 assign start_pulse_to_pu = 
-    (automatic_from_pnl && start_pulse_auto) ||
+    (automatic_from_pnl && !stop_because_cmp && start_pulse_auto) ||
     (start_pulse_from_pnl);
 
 assign order_io_to_ac = 

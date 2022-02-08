@@ -29,6 +29,9 @@ module core_top (
     input  pnl_continuous_input,        // level
     input  pnl_stop_after_output,       // level
 
+    input  pnl_stop_at_cmp,             // level
+    input  pnl_cmp_with_strt,           // level
+
     input  pnl_do_arr_c,                // pulse
     input  [30:0] pnl_arr_reg_c_value,  // level
 
@@ -37,6 +40,8 @@ module core_top (
 
     input  pnl_do_arr_sel,              // pulse
     input  [11:0] pnl_arr_sel_value,    // level
+
+    input  [11:0] pnl_arr_cmp_value,    // level
 
     output pnl_input_active,            // level
     output pnl_output_active,           // level
@@ -102,10 +107,12 @@ wire  [ 5:0]  ctrl_bus_from_op_to_pu;
 wire  [ 5:0]  op_code_from_op_to_pnl;
 
 // start_reg output signals
+wire  cmp_match_from_strt_to_io;
 wire  [11:0]  strt_value_from_strt_to_sel;
 wire  [11:0]  strt_value_from_strt_to_pnl;
 
 // select_reg output signals
+wire  cmp_match_from_sel_to_io;
 wire  [11:0]  sel_value_from_sel_to_strt;
 wire  [11:0]  sel_value_from_sel_to_mem;
 wire  [11:0]  sel_value_from_sel_to_pnl;
@@ -168,6 +175,9 @@ wire  [11:0] arr_strt_data_from_pnl_to_strt;
 wire  do_arr_sel_from_pnl_to_sel;
 wire  [11:0] arr_sel_data_from_pnl_to_sel;
 
+wire  [11:0] cmp_value_from_pnl_to_strt;
+wire  [11:0] cmp_value_from_pnl_to_sel;
+
 wire  start_pulse_from_pnl_to_io;
 wire  clear_pu_from_pnl_to_pu;
 wire  automatic_from_pnl_to_io;
@@ -185,6 +195,9 @@ wire  output_oct_from_pnl_to_io;
 wire  output_dec_from_pnl_to_io;
 wire  continuous_input_from_pnl_to_io;
 wire  stop_after_output_from_pnl_to_io;
+
+wire  stop_at_cmp_from_pnl_to_io;
+wire  cmp_with_strt_from_pnl_to_io;
 
 arith_unit  u_arith_unit (
     .clk                        ( clk                         ),
@@ -311,7 +324,9 @@ start_reg  u_start_reg (
     .do_inc_strt_from_pu     ( do_inc_strt_from_pu_to_strt      ),
     .do_sel_to_strt_from_pu  ( do_sel_to_strt_from_pu_to_strt   ),
     .sel_value_from_sel      ( sel_value_from_sel_to_strt       ),
+    .cmp_value_from_pnl      ( cmp_value_from_pnl_to_strt       ),
 
+    .cmp_match_to_io         ( cmp_match_from_strt_to_io        ),
     .strt_value_to_sel       ( strt_value_from_strt_to_sel        ),
     .strt_value_to_pnl       ( strt_value_from_strt_to_pnl        )
 );
@@ -328,7 +343,9 @@ select_reg  u_select_reg (
     .do_addr2_to_sel_from_pu  ( do_addr2_to_sel_from_pu_to_sel   ),
     .do_addr2_to_sel_from_io  ( do_addr2_to_sel_from_io_to_sel   ),
     .addr2_value_from_au      ( addr2_value_from_au_to_sel       ),
+    .cmp_value_from_pnl       ( cmp_value_from_pnl_to_sel        ),
 
+    .cmp_match_to_io          ( cmp_match_from_sel_to_io           ),
     .sel_value_to_strt        ( sel_value_from_sel_to_strt         ),
     .sel_value_to_mem         ( sel_value_from_sel_to_mem          ),
     .sel_value_to_pnl         ( sel_value_from_sel_to_pnl          )
@@ -408,6 +425,10 @@ io_unit  u_io_unit (
     .input_val_from_dev           ( input_val_from_dev_to_io            ),
     .input_data_from_dev          ( input_data_from_dev_to_io           ),
     .output_ack_from_dev          ( output_ack_from_dev_to_io           ),
+    .stop_at_cmp_from_pnl         ( stop_at_cmp_from_pnl_to_io          ),
+    .cmp_with_strt_from_pnl       ( cmp_with_strt_from_pnl_to_io        ),
+    .cmp_match_from_strt          ( cmp_match_from_strt_to_io           ),
+    .cmp_match_from_sel           ( cmp_match_from_sel_to_io            ),
 
     .input_active_to_pnl          ( input_active_from_io_to_pnl         ),
     .output_active_to_pnl         ( output_active_from_io_to_pnl        ),
@@ -452,6 +473,9 @@ assign output_dec_from_pnl_to_io =  pnl_output_dec;
 assign continuous_input_from_pnl_to_io = pnl_continuous_input;
 assign stop_after_output_from_pnl_to_io = pnl_stop_after_output;
 
+assign stop_at_cmp_from_pnl_to_io = pnl_stop_at_cmp;
+assign cmp_with_strt_from_pnl_to_io = pnl_cmp_with_strt;
+
 assign do_arr_c_from_pnl_to_au = pnl_do_arr_c;
 assign do_arr_c_from_pnl_to_ac = pnl_do_arr_c;
 assign {arr_reg_c_sign_from_pnl_to_ac, arr_reg_c_value_from_pnl_to_au} = pnl_arr_reg_c_value;
@@ -461,6 +485,9 @@ assign arr_strt_data_from_pnl_to_strt = pnl_arr_strt_value;
 
 assign do_arr_sel_from_pnl_to_sel = pnl_do_arr_sel;
 assign arr_sel_data_from_pnl_to_sel = pnl_arr_sel_value;
+
+assign cmp_value_from_pnl_to_strt = pnl_arr_cmp_value;
+assign cmp_value_from_pnl_to_sel = pnl_arr_cmp_value;
 
 assign pnl_op_code = op_code_from_op_to_pnl;
 assign pnl_strt_value = strt_value_from_strt_to_pnl;
