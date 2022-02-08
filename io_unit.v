@@ -111,6 +111,7 @@ wire start_pulse_delay;
 reg  start_pulse_r;
 wire start_pulse_auto;
 wire stop_because_cmp;
+reg  stop_because_cmp_r;
 
 // input statement machine
 always @(posedge clk) begin
@@ -351,6 +352,14 @@ always @(posedge clk) begin
     end
 end
 
+always @(posedge clk) begin
+    if (~resetn) begin
+        stop_because_cmp_r <= 1'b0;
+    end else begin
+        stop_because_cmp_r <= stop_because_cmp;
+    end
+end
+
 assign mem_write_to_mem  = 
     order_write_r || order_write_from_input;
 
@@ -362,8 +371,11 @@ assign stop_because_cmp =
         (!cmp_with_strt_from_pnl && cmp_match_from_sel)
     );
 assign start_pulse_to_pu = 
-    (automatic_from_pnl && !stop_because_cmp && start_pulse_auto) ||
-    (start_pulse_from_pnl);
+    start_pulse_from_pnl || (
+        automatic_from_pnl && 
+        !stop_because_cmp && !stop_because_cmp_r &&
+        start_pulse_auto
+    );
 
 assign order_io_to_ac = 
     order_io_from_input || order_io_from_output;
