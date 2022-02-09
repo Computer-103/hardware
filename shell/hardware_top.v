@@ -1,4 +1,4 @@
-module shell_top (
+module hardware_top (
     input clk, 
     input resetn,
 
