@@ -254,10 +254,10 @@ assign ram_6_write_line = ram_write_line;
 assign ram_7_write_line = ram_write_line;
 
 assign ram_write_bit = 
-    ({128{addr[1:0] == 2'o0}} & (128'h_7fff_ffff <<  0)) | 
-    ({128{addr[1:0] == 2'o1}} & (128'h_7fff_ffff << 32)) | 
-    ({128{addr[1:0] == 2'o2}} & (128'h_7fff_ffff << 64)) | 
-    ({128{addr[1:0] == 2'o3}} & (128'h_7fff_ffff << 96));
+    ({128{addr[1:0] == 2'o0}} & (128'h7fff_ffff <<  0)) | 
+    ({128{addr[1:0] == 2'o1}} & (128'h7fff_ffff << 32)) | 
+    ({128{addr[1:0] == 2'o2}} & (128'h7fff_ffff << 64)) | 
+    ({128{addr[1:0] == 2'o3}} & (128'h7fff_ffff << 96));
 
 assign ram_0_write_bit = ~ram_write_bit;
 assign ram_1_write_bit = ~ram_write_bit;
