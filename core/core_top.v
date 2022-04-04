@@ -377,7 +377,8 @@ pulse_unit  u_pulse_unit (
     .pu_state_to_pnl          ( pu_state_from_pu_to_pnl         )
 );
 
-memory  u_memory (
+// memory_fpga u_memory (
+memory_asic u_memory (
     .clk                     ( clk                     ),
     .resetn                  ( resetn                  ),
     .mem_read_from_pu        ( mem_read_from_pu_to_mem        ),
