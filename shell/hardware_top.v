@@ -35,8 +35,8 @@ module hardware_top (
 
 
     input  btn_do_arr_c,                // btn
-    input  btn_do_arr_strt,             // btn
     input  btn_do_arr_sel,              // btn
+    input  btn_do_arr_strt,             // btn
 
     output [ 2:0] pnl_pu_state,         // level
 
@@ -66,8 +66,8 @@ wire pnl_stop_input;
 wire pnl_start_output;
 wire pnl_stop_output;
 wire pnl_do_arr_c;
-wire pnl_do_arr_strt;
 wire pnl_do_arr_sel;
+wire pnl_do_arr_strt;
 
 // pnl level
 wire pnl_input_dec;
@@ -125,10 +125,10 @@ core_top  u_core_top (
     .pnl_cmp_with_strt       ( pnl_cmp_with_strt        ),
     .pnl_do_arr_c            ( pnl_do_arr_c             ),
     .pnl_arr_reg_c_value     ( pnl_arr_reg_c_value      ),
-    .pnl_do_arr_strt         ( pnl_do_arr_strt          ),
-    .pnl_arr_strt_value      ( pnl_arr_strt_value       ),
     .pnl_do_arr_sel          ( pnl_do_arr_sel           ),
     .pnl_arr_sel_value       ( pnl_arr_sel_value        ),
+    .pnl_do_arr_strt         ( pnl_do_arr_strt          ),
+    .pnl_arr_strt_value      ( pnl_arr_strt_value       ),
     .pnl_arr_cmp_value       ( pnl_arr_cmp_value        ),
 
     .dev_input_rdy           ( dev_input_rdy            ),
@@ -137,8 +137,8 @@ core_top  u_core_top (
     .pnl_input_active        ( pnl_input_active         ),
     .pnl_output_active       ( pnl_output_active        ),
     .pnl_op_code             ( pnl_op_code              ),
-    .pnl_strt_value          ( pnl_strt_value           ),
     .pnl_sel_value           ( pnl_sel_value            ),
+    .pnl_strt_value          ( pnl_strt_value           ),
     .pnl_reg_c_value         ( pnl_reg_c_value          ),
     .pnl_pu_state            ( pnl_pu_state             )
 );
@@ -188,15 +188,15 @@ button_pulse  do_arr_c_button_pulse (
     .btn    ( btn_do_arr_c                      ),
     .pulse  ( pnl_do_arr_c                      )
 );
-button_pulse  do_arr_strt_button_pulse (
-    .clk    ( clk       ),  .resetn ( resetn    ),
-    .btn    ( btn_do_arr_strt                   ),
-    .pulse  ( pnl_do_arr_strt                   )
-);
 button_pulse  do_arr_sel_button_pulse (
     .clk    ( clk       ),  .resetn ( resetn    ),
     .btn    ( btn_do_arr_sel                    ),
     .pulse  ( pnl_do_arr_sel                    )
+);
+button_pulse  do_arr_strt_button_pulse (
+    .clk    ( clk       ),  .resetn ( resetn    ),
+    .btn    ( btn_do_arr_strt                   ),
+    .pulse  ( pnl_do_arr_strt                   )
 );
 
 switch_level  input_dec_switch_level (
@@ -243,7 +243,7 @@ switch_level  allow_arr_switch_level (
 assign serial_out_0 = 
     { 1'b0, pnl_reg_c_value[30:0] };
 assign serial_out_1 = 
-    { 2'b0, pnl_op_code[5:0], pnl_strt_value[11:0], pnl_sel_value[11:0] };
+    { 2'b0, pnl_op_code[5:0], pnl_sel_value[11:0], pnl_strt_value[11:0] };
 
 driver_74lv595 u_driver_74lv595 (
     .clk    ( clk       ),  .resetn ( resetn    ),
@@ -263,17 +263,17 @@ driver_74lv165 u_driver_74lv165 (
 
 assign ser_arr_reg_c_value =
     {serial_in_1[22:16], serial_in_0[23:0]};
-assign {ser_arr_strt_value, ser_arr_sel_value} =
+assign {ser_arr_sel_value, ser_arr_strt_value} =
     {serial_in_2[23:0]};
 assign ser_arr_cmp_value =
     {serial_in_1[11:0]};  
 
 assign pnl_arr_reg_c_value =
     {31{pnl_allow_arr}} & ser_arr_reg_c_value;
-assign pnl_arr_strt_value =
-    {12{pnl_allow_arr}} & ser_arr_strt_value;
 assign pnl_arr_sel_value =
     {12{pnl_allow_arr}} & ser_arr_sel_value;
+assign pnl_arr_strt_value =
+    {12{pnl_allow_arr}} & ser_arr_strt_value;
 assign pnl_arr_cmp_value =
     {12{pnl_allow_arr}} & ser_arr_cmp_value;
 
