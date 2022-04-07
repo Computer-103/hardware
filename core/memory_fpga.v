@@ -53,7 +53,7 @@ wire [30:0] ram_read_word;
 wire [30:0] ram_write_word;
 
 // ram
-Gowin_SP_31_2K ram (
+Gowin_SP ram (
     .dout(ram_read_word),
     .clk(clk),
     .oce(1'b0),
