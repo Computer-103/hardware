@@ -180,6 +180,7 @@ wire  [11:0] cmp_value_from_pnl_to_sel;
 
 wire  start_pulse_from_pnl_to_io;
 wire  clear_pu_from_pnl_to_pu;
+wire  clear_pu_from_pnl_to_op;
 wire  automatic_from_pnl_to_io;
 wire  start_input_from_pnl_to_io;
 wire  stop_input_from_pnl_to_io;
@@ -292,6 +293,7 @@ arith_ctrl  u_arith_ctrl (
 operator  u_operator (
     .clk                       ( clk                        ),
     .resetn                    ( resetn                     ),
+    .clear_pu_from_pnl         ( clear_pu_from_pnl_to_op          ),
     .do_code_to_op_from_pu     ( do_code_to_op_from_pu_to_op      ),
     .operate_pulse_from_pu     ( operate_pulse_from_pu_to_op      ),
     .do_move_b_to_c_from_pu    ( do_move_b_to_c_from_pu_to_op     ),
@@ -313,7 +315,7 @@ operator  u_operator (
     .start_pulse_to_io         ( start_pulse_from_op_to_io          ),
     .ctrl_abs_to_ac            ( ctrl_abs_from_op_to_ac             ),
     .ctrl_bus_to_pu            ( ctrl_bus_from_op_to_pu             ),
-    .op_code_to_pnl      ( op_code_from_op_to_pnl       )
+    .op_code_to_pnl            ( op_code_from_op_to_pnl       )
 );
 
 select_reg  u_select_reg (
@@ -377,8 +379,8 @@ pulse_unit  u_pulse_unit (
     .pu_state_to_pnl          ( pu_state_from_pu_to_pnl         )
 );
 
-// memory_fpga u_memory (
-memory_asic u_memory (
+memory_fpga u_memory (
+// memory_asic u_memory (
     .clk                     ( clk                     ),
     .resetn                  ( resetn                  ),
     .mem_read_from_pu        ( mem_read_from_pu_to_mem        ),
@@ -458,6 +460,7 @@ assign dev_output_data = output_data_from_io_to_dev;
 // pnl
 assign start_pulse_from_pnl_to_io = pnl_start_pulse;
 assign clear_pu_from_pnl_to_pu = pnl_clear_pu;
+assign clear_pu_from_pnl_to_op = pnl_clear_pu;
 assign automatic_from_pnl_to_io = pnl_automatic;
 assign start_input_from_pnl_to_io = pnl_start_input;
 assign stop_input_from_pnl_to_io = pnl_stop_input;

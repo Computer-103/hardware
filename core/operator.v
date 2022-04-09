@@ -8,6 +8,8 @@ module operator (
     input  clk,
     input  resetn,
 
+    input  clear_pu_from_pnl,           // pulse, from pnl
+
     input  do_code_to_op_from_pu,       // pulse, from pu
     input  operate_pulse_from_pu,       // pulse, from pu
     input  do_move_b_to_c_from_pu,      // pulse, from pu
@@ -55,6 +57,8 @@ wire wait_start_at_6;
 // operate code register
 always @ (posedge clk) begin
     if (~resetn) begin
+        op_code <= 6'h0;
+    end else if (clear_pu_from_pnl) begin
         op_code <= 6'h0;
     end else if (do_code_to_op_from_pu) begin
         op_code <= op_code_from_au;
