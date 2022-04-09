@@ -6,16 +6,25 @@ module button_pulse (
     output pulse        // pulse
 );
 
-reg  btn_r;
+wire btn_now;
+
+debouncer sw_debouncer (
+    .clk            (clk),
+    .resetn         (resetn),
+    .original_sig   (btn),
+    .debounced_sig  (btn_now)
+);
+
+reg  btn_last;
 reg  pulse_r;
 
 always @(posedge clk) begin
     if (~resetn) begin
-        btn_r <= 1'b0;
+        btn_last <= 1'b0;
         pulse_r <= 1'b0;
     end else begin
-        btn_r <= btn;
-        pulse_r <= !btn && btn_r;
+        btn_last <= btn_now;
+        pulse_r <= btn_last && !btn_now;
     end
 end
 

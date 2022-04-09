@@ -6,16 +6,11 @@ module switch_level (
     output level        // level
 );
 
-reg  sw_r;
-
-always @(posedge clk) begin
-    if (~resetn) begin
-        sw_r <= 1'b0;
-    end else begin
-        sw_r <= sw;
-    end
-end
-
-assign level = sw_r;
+debouncer sw_debouncer (
+    .clk            (clk),
+    .resetn         (resetn),
+    .original_sig   (sw),
+    .debounced_sig  (level)
+);
 
 endmodule
