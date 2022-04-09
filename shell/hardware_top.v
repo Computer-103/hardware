@@ -56,6 +56,14 @@ module hardware_top (
     
 );
 
+// dev sync
+wire dev_input_rdy_orig;
+wire dev_input_val_sync;
+wire dev_output_rdy_orig;
+wire dev_output_ack_sync;
+wire [ 4:0] dev_input_data_sync;
+wire [ 4:0] dev_output_data_orig;
+
 // pnl pulse
 wire pnl_start_pulse;
 wire pnl_clear_pu;
@@ -105,9 +113,9 @@ wire [31:0] serial_out_1;
 core_top  u_core_top (
     .clk                     ( clk                      ),
     .resetn                  ( resetn                   ),
-    .dev_input_val           ( dev_input_val            ),
-    .dev_output_ack          ( dev_output_ack           ),
-    .dev_input_data          ( dev_input_data           ),
+    .dev_input_val           ( dev_input_val_sync       ),
+    .dev_output_ack          ( dev_output_ack_sync      ),
+    .dev_input_data          ( dev_input_data_sync      ),
     .pnl_start_pulse         ( pnl_start_pulse          ),
     .pnl_clear_pu            ( pnl_clear_pu             ),
     .pnl_automatic           ( pnl_automatic            ),
@@ -131,9 +139,9 @@ core_top  u_core_top (
     .pnl_arr_strt_value      ( pnl_arr_strt_value       ),
     .pnl_arr_cmp_value       ( pnl_arr_cmp_value        ),
 
-    .dev_input_rdy           ( dev_input_rdy            ),
-    .dev_output_rdy          ( dev_output_rdy           ),
-    .dev_output_data         ( dev_output_data          ),
+    .dev_input_rdy           ( dev_input_rdy_orig   ),
+    .dev_output_rdy          ( dev_output_rdy_orig  ),
+    .dev_output_data         ( dev_output_data_orig ),
     .pnl_input_active        ( pnl_input_active         ),
     .pnl_output_active       ( pnl_output_active        ),
     .pnl_op_code             ( pnl_op_code              ),
@@ -141,6 +149,42 @@ core_top  u_core_top (
     .pnl_strt_value          ( pnl_strt_value           ),
     .pnl_reg_c_value         ( pnl_reg_c_value          ),
     .pnl_pu_state            ( pnl_pu_state             )
+);
+
+registered_output dev_input_rdy_registered_output (
+    .clk    ( clk       ),  .resetn ( resetn    ),
+    .output_sig     ( dev_input_rdy_orig        ),
+    .registered_sig ( dev_input_rdy             )
+);
+registered_output dev_output_rdy_registered_output (
+    .clk    ( clk       ),  .resetn ( resetn    ),
+    .output_sig     ( dev_output_rdy_orig       ),
+    .registered_sig ( dev_output_rdy            )
+);
+registered_output # (
+    .width  ( 5 )
+) dev_output_data_registered_output (
+    .clk    ( clk       ),  .resetn ( resetn    ),
+    .output_sig     ( dev_output_data_orig      ),
+    .registered_sig ( dev_output_data           )
+);
+
+sync_chain dev_input_val_sync_chain (
+    .clk    ( clk       ),  .resetn ( resetn    ),
+    .input_sig      ( dev_input_val             ),
+    .sync_sig       ( dev_input_val_sync        )
+);
+sync_chain dev_output_ack_sync_chain (
+    .clk    ( clk       ),  .resetn ( resetn    ),
+    .input_sig      ( dev_output_ack            ),
+    .sync_sig       ( dev_output_ack_sync       )
+);
+sync_chain # (
+    .width  ( 5 )
+) dev_input_data_sync_chain (
+    .clk    ( clk       ),  .resetn ( resetn    ),
+    .input_sig      ( dev_input_data            ),
+    .sync_sig       ( dev_input_data_sync       )
 );
 
 button_pulse  start_pulse_button_pulse (
